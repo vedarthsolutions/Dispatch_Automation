@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include e_dispatch *.css
+recursive-include e_dispatch *.csv
+recursive-include e_dispatch *.html
+recursive-include e_dispatch *.ico
+recursive-include e_dispatch *.js
+recursive-include e_dispatch *.json
+recursive-include e_dispatch *.md
+recursive-include e_dispatch *.png
+recursive-include e_dispatch *.py
+recursive-include e_dispatch *.svg
+recursive-include e_dispatch *.txt
+recursive-exclude e_dispatch *.pyc

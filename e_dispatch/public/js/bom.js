@@ -120,7 +120,7 @@ frappe.ui.form.on("BOM", {
 						treeView: true,
 					});
 
-					datatable.rowmanager.setTreeDepth(3);
+					datatable.rowmanager.setTreeDepth(10);
 					if (frm.doc.docstatus != 0) {
 						$(datatable.wrapper).find(".production_state").attr("disabled", true);
 					}

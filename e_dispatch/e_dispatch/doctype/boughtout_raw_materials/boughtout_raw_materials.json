@@ -9,10 +9,12 @@
   "item_code",
   "item_name",
   "warehouse",
+  "production_state",
+  "default_customer",
   "qty",
   "uom",
   "stock_uom",
-  "requested_qty"
+  "so_qty"
  ],
  "fields": [
   {
@@ -28,8 +30,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Warehouse",
-   "options": "Warehouse",
-   "reqd": 1
+   "options": "Warehouse"
   },
   {
    "fieldname": "qty",
@@ -62,16 +63,29 @@
    "read_only": 1
   },
   {
-   "fieldname": "requested_qty",
+   "fieldname": "default_customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Default Customer",
+   "options": "Customer"
+  },
+  {
+   "fieldname": "so_qty",
    "fieldtype": "Float",
-   "label": "Requested Qty",
-   "read_only": 1
+   "label": "SO Qty"
+  },
+  {
+   "fieldname": "production_state",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Production State",
+   "options": "\nIgnore\nIn House\nSubcontract\nPurchase\nPurchase and Resale\nSubcontract and Resale\nIn House and Resale"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-12-15 21:10:35.690974",
+ "modified": "2023-02-05 00:31:23.265387",
  "modified_by": "Administrator",
  "module": "E Dispatch",
  "name": "Boughtout Raw Materials",

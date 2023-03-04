@@ -3,7 +3,10 @@ import copy
 from frappe.utils import get_link_to_form
 
 @frappe.whitelist()
-def get_bom_tree(bom_no, level=0, bom_items=[]):
+def get_bom_tree(bom_no, level=0, parent_qty = 0, bom_items=[]):
+	if not parent_qty:
+		parent_qty = frappe.db.get_value("BOM", bom_no, "quantity")
+
 	if isinstance(bom_items, str):
 		bom_items = []
 
@@ -16,19 +19,16 @@ def get_bom_tree(bom_no, level=0, bom_items=[]):
 		new_item["indent"] = level
 		new_item["parent_bom"] = get_link_to_form("BOM", bom_no)
 		new_item["production_state"] = get_production_state(item)
+		new_item["qty"] = item.qty / bom.quantity * parent_qty
 		bom_items.append(new_item)
 		if item.bom_no:
-			bom_items += get_bom_tree(item.bom_no, level+1, [])
+			bom_items += get_bom_tree(item.bom_no, level+1, bom.quantity, [])
 
 	return bom_items
 
 @frappe.whitelist()
 def get_custom_bom_items(bom_no):
 	data = frappe.get_all("Custom BOM Item", {"parent": bom_no}, ["*"], order_by="idx asc")
-	item_customers = itemwise_customers(data)
-	for d in data:
-		customers = item_customers.get(d.item_code, []) or []
-		d.customers = customers or []
 
 	return data
 
@@ -75,8 +75,7 @@ def update_bom_custom_items(bom_no):
 			"production_state": d.production_state or frappe.get_cached_value("Item",
 				d.item_code, "production_state") or "Ignore",
 			"indent": d.indent,
-			"bom_no": d.bom_no,
-			"customers": customers
+			"bom_no": d.bom_no
 		})
 
 	doc.save()

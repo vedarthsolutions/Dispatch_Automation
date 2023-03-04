@@ -554,15 +554,6 @@ frappe.ui.form.on("BOM", {
 							name: "Default Customer",
 							editable: false,
 							width: 200,
-							format: (value, row, column, data) => {
-								value = value;
-								if (data.frm && data.frm.datatable) {
-									frm.events.bind_events(data.frm);
-								}
-
-								value = add_select(value, data);
-								return value;
-							}
 						}],
 						data: bom_data,
 						name_field: "item_code",
@@ -585,7 +576,6 @@ frappe.ui.form.on("BOM", {
 
 	bind_events(frm) {
 		frm.events.update_production_state(frm);
-		frm.events.update_default_customer(frm);
 	},
 
 	update_production_state(frm) {

@@ -1,7 +1,7 @@
 frappe.ui.form.on("Production Plan", {
 	get_boughtout_raw_materials(frm) {
 		frm.call({
-			method: "set_boughtout_raw_materials",
+			method: "set_sales_order_materials",
 			freeze: true,
 			doc: frm.doc,
 			callback: function(r) {
@@ -40,8 +40,6 @@ frappe.ui.form.on("Production Plan", {
 	},
 
 	refresh(frm) {
-		frm.toggle_display("boughtout_raw_materials_section", false);
-
 		if (frm.doc.docstatus == 1 && frm.doc.mr_items && frm.doc.mr_items.length > 0) {
 			let items = frm.doc.mr_items.filter(
 				item => (item.quantity > flt(item.sales_order_qty) && item.production_state == "Purchase and Resale")
@@ -61,25 +59,12 @@ frappe.ui.form.on("Production Plan", {
 	},
 
 	make_sales_order(frm) {
-		frm.add_custom_button(__('Make Sales Order'), function() {
-			frm.call({
-				method: "make_sales_order",
-				freeze: true,
-				doc: frm.doc,
-				callback: function(r) {
-					frm.reload_doc();
-				}
-			})
-		}, __("Create"));
-	},
+		let items = frm.doc.boughtout_items.filter(item => item.qty > flt(item.so_qty));
 
-	make_material_request_button(frm) {
-		let items = frm.doc.boughtout_items.filter(item => item.qty > flt(item.requested_qty));
-
-		if (items && items.length > 0) {
-			frm.add_custom_button(__('Request for Raw Materials'), function() {
+		if (frm.doc.docstatus === 1 && items && items.length > 0) {
+			frm.add_custom_button(__('Sales Order'), function() {
 				frm.call({
-					method: "make_raw_materials_for_boughtout_items",
+					method: "make_sales_order",
 					freeze: true,
 					doc: frm.doc,
 					callback: function(r) {

@@ -126,7 +126,8 @@ doc_events = {
 	},
 
 	"Production Plan": {
-		"validate": "e_dispatch.custom_folder.custom_production_plan.validate_event"
+		"validate": "e_dispatch.custom_folder.custom_production_plan.validate_event",
+		"on_submit": "e_dispatch.custom_folder.custom_production_plan.on_submit_event"
 	},
 
 	"Sales Order": {

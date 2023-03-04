@@ -354,6 +354,8 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 		if not data.get("name"):
 			continue
 
+		bom_qty = frappe.get_cached_value("BOM", data.get("bom_no"), "quantity")
+
 		if not data.get("include_exploded_items") and doc.get("sub_assembly_items"):
 			data["include_exploded_items"] = 1
 
@@ -380,7 +382,7 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 
 				item_details.setdefault(key, frappe._dict({
 					"item_code": row.item_code,
-					"qty": row.qty * planned_qty,
+					"qty": (row.qty * planned_qty) / bom_qty,
 					"production_state": row.production_state,
 					"min_order_qty": item_master.min_order_qty,
 					"description": item_master.description,
@@ -397,7 +399,7 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 					"production_plan_item": data.get("production_plan_item") or data.get("name")
 				}))
 			else:
-				item_details[key].qty += (row.qty * planned_qty)
+				item_details[key].qty += (row.qty * planned_qty) / bom_qty
 
 		sales_order = doc.get("sales_order")
 

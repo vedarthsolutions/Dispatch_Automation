@@ -7,14 +7,15 @@ frappe.ui.form.on("Pick List", {
 	},
 
 	hide_fields(frm) {
-		let hide_fields = in_list(["dispatch@fabchair.com", "Administrator"],
-			frappe.session.user);
+		if (in_list(["dispatch@fabchair.com", "Administrator"], frappe.session.user)) {
+			return;
+		}
 
 		let fields = ["section_break_6", "section_break_15",
 			"print_settings_section", "custom_section_break", "pick_list_details"]
 
 		fields.forEach(field => {
-			frm.toggle_display(field, !hide_fields);
+			frm.set_df_property(field, "hidden", true);
 		});
 	},
 
@@ -182,6 +183,7 @@ frappe.ui.form.on("Pick List", {
 
 			</script>
 			<button id="scan_qrcode" class="btn btn-primary">Scan Qr Code</button>
+			<p style="padding-top:15px"><label>Total Box Scanned : </label> <b id="scanned_box"></b></p>
 		`);
 
 		document.getElementById('scan_qrcode').addEventListener('click', async() => {
@@ -193,17 +195,18 @@ frappe.ui.form.on("Pick List", {
 				frm.events.parse_qrcode(frm, scanned_qrcode);
 			});
 		});
+
+		frm.events.set_no_of_boxes(frm);
 	},
 
-	// scan_qrcode_button(frm) {
-	// 	if (!frm.doc.warehouse) {
-	// 		frappe.throw(__("Please select Pick From Warehouse"));
-	// 	}
+	set_no_of_boxes(frm) {
+		let total_boxes = 0;
+		if (frm.doc.custom_items && frm.doc.custom_items.length > 0) {
+			total_boxes = frm.doc.custom_items.length;
+		}
 
-	// 	startBarcodeScanner((scanned_qrcode) => {
-	// 		frm.events.parse_qrcode(frm, scanned_qrcode);
-	// 	});
-	// }
+		document.getElementById('scanned_box').innerHTML = total_boxes;
+	}
 });
 
 let pScanner = null;
@@ -212,6 +215,10 @@ let pScanner = null;
 	 try {
 		 let scanner = await (pScanner = pScanner || Dynamsoft.DBR.BarcodeScanner.createInstance());
 		 document.getElementById('showScanner').hidden = false;
+		 let scanSettings = await scanner.getScanSettings();
+		 scanSettings.whenToPlaySoundforSuccessfulRead = "frame";
+		 await scanner.updateScanSettings(scanSettings);
+
 		 scanner.onFrameRead = (_results) => {
 			 for (let result of _results) {
 				 let newElements = [];

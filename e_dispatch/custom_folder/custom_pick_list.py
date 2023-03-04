@@ -11,7 +11,22 @@ from erpnext.stock.doctype.pick_list.pick_list import (PickList,
 
 class CustomPickList(PickList):
 	def before_save(self):
-		pass
+		self.set_sales_order_reference()
+
+	def set_sales_order_reference(self):
+		item_warehouse_wise_reference = {}
+
+		for row in self.picklist_items:
+			key = (row.item_code, row.warehouse)
+			item_warehouse_wise_reference.setdefault(key, (row.sales_order, row.sales_order_item))
+
+		for nrow in self.locations:
+			if not (nrow.sales_order and nrow.sales_order_item):
+				data = item_warehouse_wise_reference.get((nrow.item_code, nrow.warehouse))
+				if data:
+					nrow.sales_order = data[0]
+					nrow.sales_order_item = data[1]
+
 
 	@frappe.whitelist()
 	def custom_scan_qrcode(self, scanned_qrcode):

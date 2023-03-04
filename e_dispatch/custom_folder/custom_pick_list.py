@@ -166,6 +166,9 @@ def create_sales_invoice(doc):
 				"amount": row.picked_qty * frappe.db.get_value("Sales Order Item", row.sales_order_item, "rate"),
 				"warehouse": row.warehouse,
 				"batch_no": row.batch_no,
+				"sales_order": row.sales_order,
+				"sales_order_item": row.sales_order_item,
+				"income_account": frappe.db.get_value("Company", doc.company, "default_income_account")
 			})
 
 		si.flags.ignore_permissions = True

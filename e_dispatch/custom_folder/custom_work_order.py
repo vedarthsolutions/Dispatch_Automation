@@ -36,12 +36,13 @@ def make_qr_code(work_order):
 			content = json.dumps(args)
 
 			img = qrcode.make(content)
-			path = frappe.get_site_path("public", "files", qr_code_id + ".png")
+			file_name = frappe.generate_hash("", 12)
+			path = frappe.get_site_path("public", "files", file_name + ".png")
 			img.save(path)
 
 			frappe.get_doc(
 				doctype="File",
-				file_url=f"/files/{qr_code_id}.png",
+				file_url=f"/files/{file_name}.png",
 				attached_to_name=doc.name,
 				attached_to_doctype=doc.doctype,
 				file_name=qr_code_id,

@@ -119,10 +119,10 @@ def validate_picked_qty(doc):
 	if not item_warehouse_wise_batch_qty:
 		return
 
-	for row in doc.locations:
-		if (row.item_code, row.warehouse) in item_warehouse_wise_batch_qty:
-			if abs(flt(row.picked_qty) - flt(item_warehouse_wise_batch_qty[(row.item_code, row.warehouse)])) > 0.1:
-				frappe.throw(f"Row {row.idx}: Picked Qty {row.picked_qty} does not match with Scanned Item Qty {item_warehouse_wise_batch_qty[(row.item_code, row.warehouse)]}")
+	# for row in doc.locations:
+	# 	if (row.item_code, row.warehouse) in item_warehouse_wise_batch_qty:
+	# 		if abs(flt(row.picked_qty) - flt(item_warehouse_wise_batch_qty[(row.item_code, row.warehouse)])) > 0.1:
+	# 			frappe.throw(f"Row {row.idx}: Picked Qty {row.picked_qty} does not match with Scanned Item Qty {item_warehouse_wise_batch_qty[(row.item_code, row.warehouse)]}")
 
 
 def on_submit_event(doc, method=None):

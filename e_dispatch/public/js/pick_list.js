@@ -3,6 +3,19 @@ frappe.ui.form.on("Pick List", {
 		frm.set_df_property("picklist_items", "read_only", 1);
 		frm.clear_custom_buttons()
 		frm.trigger('add_get_items_button');
+		frm.events.hide_fields(frm);
+	},
+
+	hide_fields(frm) {
+		let hide_fields = in_list(["dispatch@fabchair.com", "Administrator"],
+			frappe.session.user);
+
+		let fields = ["section_break_6", "section_break_15",
+			"print_settings_section", "custom_section_break", "pick_list_details"]
+
+		fields.forEach(field => {
+			frm.toggle_display(field, !hide_fields);
+		});
 	},
 
 	validate(frm) {

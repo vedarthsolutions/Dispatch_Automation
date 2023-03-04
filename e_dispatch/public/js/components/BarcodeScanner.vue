@@ -33,7 +33,6 @@
           />
         </div>
         <div class="soundEffects" @click="soundEffectsSwitch" :style="{backgroundColor: $store.state.soundEffectsOn? 'rgba(110, 110, 110, .8)': '',}">
-          <img :src="soundEffectsIconPath" :class="{ musicSelected: soundEffectsOn, musicUnSelected: !soundEffectsOn }"/>
         </div>
       </div>
       <div class="curUseCaseTip">
@@ -157,11 +156,8 @@
 import Vue from "vue";
 import {BarcodeScanner,EnumGrayscaleTransformationMode,EnumDPMCodeReadingMode,EnumLocalizationMode} from "dynamsoft-javascript-barcode";
 import { CodeParser } from "dynamsoft-code-parser";
-import musicIcon from "../assets/image/music-unselected.svg";
-import checkedMusicIcon from "../assets/image/Music-selected.svg";
 import BarcodeFormatMap from "../assets/enum/BarcodeFormatMap.js";
 import BarcodeFormatMap_2 from "../assets/enum/BarcodeFormatMap_2.js";
-// import DriverLicenseFields from "../assets/enum/DriverLicenseFields.js";
 import CodeParserFields from "../assets/enum/CodeParserFields";
 import FromImage from "./FromImage.vue";
 import Home from "./Home.vue";
@@ -181,7 +177,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      soundEffectsIconPath: checkedMusicIcon,
       scanner: null,
       parser: null,
       isDestroyed: false,
@@ -264,7 +259,7 @@ export default Vue.extend({
       let config = {};
       config.duration = 2;
       config.content = "Rotate your device.";
-      config.icon = (<a-icon type="mobile" spin style={{ color: "#FE8E14" }}></a-icon>);
+      config.icon = '';
       this.$message.open(config);
     }
   },
@@ -434,18 +429,14 @@ export default Vue.extend({
         let config = {};
         config.content = "Copied!";
         config.duration = 1;
-        config.icon = (
-          <a-icon type="smile" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         clipboard.destroy();
       });
       clipboard.on("error", () => {
         let config = {};
         config.content = "Failed!";
-        config.icon = (
-          <a-icon type="frown" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         clipboard.destroy();
       });
@@ -465,18 +456,14 @@ export default Vue.extend({
         let config = {};
         config.content = "Copied!";
         config.duration = 1;
-        config.icon = (
-          <a-icon type="smile" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         clipboard.destroy();
       });
       clipboard.on("error", () => {
         let config = {};
         config.content = "Failed!";
-        config.icon = (
-          <a-icon type="frown" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         clipboard.destroy();
       });
@@ -494,9 +481,7 @@ export default Vue.extend({
         let config = {};
         config.duration = 2;
         config.content = "Not supported.";
-        config.icon = (
-          <a-icon type="frown" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         this.isShowTorchIcon = false;
       }
@@ -604,20 +589,16 @@ export default Vue.extend({
       this.currentResolution = this.scanner.getResolution();
       this.currentCamera = await this.scanner.getCurrentCamera();
       if (this.currentCamera.deviceId !== item[0].deviceId) {
-        config.icon = (
-          <a-icon type="frown" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         config.content = "Switch camera failed!";
       } else if (this.judgeCurResolution() !== item[1]) {
-        config.icon = <a-icon type="meh" style={{ color: "#FE8E14" }}></a-icon>;
+        config.icon = '';
         config.content =
           "Switch resolution failed. " +
           item[1] +
           " might be unsupported in the camera.";
       } else {
-        config.icon = (
-          <a-icon type="smile" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         config.content = "Switched to " + this.cameraInfo + " successfully!";
         this.$store.state.currentResolution = this.scanner.dce.getResolution();
       }
@@ -1132,7 +1113,6 @@ export default Vue.extend({
       }
     },
     soundEffectsOn(newValue) {
-      this.soundEffectsIconPath = newValue ? checkedMusicIcon : musicIcon;
       this.scanner.bPlaySoundOnSuccessfulRead = newValue;
     },
     async selectedUseCase(newUseCase, oldUseCase) {
@@ -1156,9 +1136,7 @@ export default Vue.extend({
         let config = {};
         config.duration = 2;
         config.content = "Rotate your device.";
-        config.icon = (
-          <a-icon type="mobile" spin style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
       }
       if (newUseCase === "dl") {
@@ -1227,7 +1205,7 @@ export default Vue.extend({
 
 .cameraAndSoundsContainer {position: absolute;display: flex;flex-direction: row;align-items: center;top: 0;left: 0;cursor: pointer;z-index: 10;user-select: none;}
 .cameraAndSoundsContainer .cameraDropdown {display: flex;flex-direction: row;justify-content: flex-end;align-items: center;height: 100%;width: 250px;color: rgba(170, 170, 170);background-color: rgba(34, 34, 34);}
-.cameraAndSoundsContainer .soundEffects, 
+.cameraAndSoundsContainer .soundEffects,
 .cameraAndSoundsContainer .web-screenshot {display: flex;justify-content: center;align-items: center;height: 100%;width: 100px;}
 .cameraAndSoundsContainer .web-screenshot {border-right: 1px solid rgb(98, 96, 94);background-color: rgba(34, 34, 34);}
 .cameraAndSoundsContainer .web-screenshot img {height: 50%;}
@@ -1360,7 +1338,7 @@ export default Vue.extend({
   .cameraAndSoundsContainer {height: 7.7vh;}
   .cameraAndSoundsContainer .cameraDropdown {padding-left: 10px;width: 100px;}
   .cameraAndSoundsContainer .soundEffects {width: 60px;}
-  
+
   .cameraDropdown .cameraIconContainer {margin-top: 5px;}
   .cameraDropdown .cameraIconContainer svg {height: auto;}
   .cameraDropdown .cameraIconContainer label {display: block;}

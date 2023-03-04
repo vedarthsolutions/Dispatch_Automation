@@ -64,18 +64,14 @@ export default Vue.extend({
         let config = {};
         config.content = "Copied!";
         config.duration = 1;
-        config.icon = (
-          <a-icon type="smile" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         clipboard.destroy();
       });
       clipboard.on("error", () => {
         let config = {};
         config.content = "Failed!";
-        config.icon = (
-          <a-icon type="frown" style={{ color: "#FE8E14" }}></a-icon>
-        );
+        config.icon = '';
         this.$message.open(config);
         clipboard.destroy();
       });
@@ -101,9 +97,7 @@ export default Vue.extend({
           this.$message.destroy();
           let config = {};
           config.content = "Decoding...";
-          config.icon = (
-            <a-icon type="loading" style={{ color: "#FE8E14" }}></a-icon>
-          );
+          config.icon = '';
           config.duration = 0;
           this.$message.open(config);
           let results = await this.reader.decode(file);
@@ -141,18 +135,14 @@ export default Vue.extend({
           if (results.length === 0) {
             config = {};
             config.content = "No barcodes found!";
-            config.icon = (
-              <a-icon type="close" style={{ color: "#FE8E14" }}></a-icon>
-            );
+            config.icon = '';
             config.duration = 1;
             this.$store.commit("finishDecodingFile");
             this.$emit("clearResultList");
           } else {
             config.content = "Complete!";
             config.duration = 1;
-            config.icon = (
-              <a-icon type="smile" style={{ color: "#FE8E14" }}></a-icon>
-            );
+            config.icon = '';
           }
           this.$emit("showResults", this.resultsInfo, this.currentImg, results);
           this.$message.open(config);

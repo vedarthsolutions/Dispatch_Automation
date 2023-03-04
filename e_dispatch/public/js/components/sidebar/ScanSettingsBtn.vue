@@ -145,7 +145,7 @@ export default Vue.extend({
       } else if (this.scanMode === "bestCoverage") {
         this.$store.state.runtimeSettings += 'await scanner.updateRuntimeSettings(`coverage`);<br>';
       }
-      
+
       this.$store.state.runtimeSettings += 'const runtimeSettings = await scanner.getRuntimeSettings();<br>';
       if(this.selectedUseCase === "dl") {
         this.$store.state.runtimeSettings += 'runtimeSettings.barcodeFormatIds = 0x02000000;<br>';
@@ -177,7 +177,7 @@ export default Vue.extend({
           this.$store.state.runtimeSettings += 'runtimeSettings.scaleDownThreshold = 100000;<br>';
           this.$store.state.runtimeSettings += 'runtimeSettings.furtherModes.barcodeColourModes = [1, 2, 32, 0, 0, 0, 0, 0];<br>';
           break;
-        case "dl": 
+        case "dl":
           this.$store.state.runtimeSettings += 'runtimeSettings.localizationModes = [16, 8, 2, 0, 0, 0, 0, 0];<br>';
           this.$store.state.runtimeSettings += 'runtimeSettings.deblurLevel = 9;<br>';
           this.$store.state.runtimeSettings += 'runtimeSettings.minResultConfidence = 0;<br>';
@@ -202,12 +202,12 @@ export default Vue.extend({
         let config = {};
         config.content = "Copied!";
         config.duration = 1;
-        config.icon = (<a-icon type="smile" style={{ color: "#FE8E14" }}></a-icon>);
+        config.icon = '';
         this.$message.open(config);
       }, err => {
         let config = {};
         config.content = "Failed!";
-        config.icon = (<a-icon type="frown" style={{ color: "#FE8E14" }}></a-icon>);
+        config.icon = '';
         this.$message.open(config);
       });
     },
@@ -318,7 +318,7 @@ export default Vue.extend({
   .scanSettingsBtn {width: 25%;}
   .sidebarBtn img {width: 17px;height: 17px;}
   .scanSettingsOptions {width: 330px;max-height: 65vh;font-size: 14px;overflow: auto;}
-  
+
   .settingsContainer {height: 200px;}
   .settingsContainer .sendEmail {bottom: 8%;width: 128px;height: 20px;line-height: 20px;font-size: 12px;}
   .settingsContainer .codeArea {top: 12%;bottom: 20%;}
@@ -341,7 +341,7 @@ export default Vue.extend({
   .optionRows {padding-top: 25px;padding-bottom: 25px;padding-left: 18px;padding-right: 20px;}
   .optionRows .optionRow {margin-top: 19px;}
   .optionRows .optionRow:nth-child(1) {margin-top: 0;}
-  
+
   .optionRow .optionText .shortIntro {font-size: 10px;}
   .optionBtns {margin-top: 10px;}
   .optionBtn {margin-right: 10px;padding: 10px 20px;min-width: 80px;height: 40px;}

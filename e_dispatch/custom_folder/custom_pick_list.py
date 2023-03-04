@@ -62,7 +62,7 @@ def validate_event(doc, method=None):
 def validate_warehouse(doc):
 	for row in doc.locations:
 		if row.warehouse != doc.warehouse:
-			frappe.throw(f"Row {row.idx}: Warehouse should be {doc.warehouse}")
+			frappe.throw(f"Row {row.idx}: Warehouse should be same as Pick From Warehouse {doc.warehouse}")
 
 def validate_picked_qty(doc):
 	item_warehouse_wise_batch_qty = defaultdict(float)

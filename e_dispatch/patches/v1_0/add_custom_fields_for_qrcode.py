@@ -5,6 +5,8 @@ def execute():
 	frappe.reload_doc("stock", "doctype", "item")
 	frappe.reload_doc("stock", "doctype", "pick_list")
 	frappe.reload_doc("manufacturing", "doctype", "work_order")
+	frappe.reload_doc("e_dispatch", "doctype", "custom_pick_list_item")
+	frappe.reload_doc("e_dispatch", "doctype", "pick_list_qrcode")
 
 	create_custom_field("Work Order",
 		dict(fieldname="qr_code_created", fieldtype="Check",

@@ -9,6 +9,9 @@ from erpnext.stock.doctype.pick_list.pick_list import (PickList,
 	get_available_item_locations, get_items_with_location_and_quantity)
 
 class CustomPickList(PickList):
+	def before_save(self):
+		pass
+
 	@frappe.whitelist()
 	def set_item_locations(self, save=False):
 		if self.locations:

@@ -96,7 +96,7 @@ frappe.ui.form.on("Pick List", {
 		frm.fields_dict.qrcode_scanner.$wrapper.append(`
 			<h1 style="font-size: 1.5em;">Use the Default Built-in UI</h1>
 			<input type="text" id="result" title="Double click to clear!" readonly="true" class="latest-result" placeholder="The Last Read Barcode">
-				<div id="UIElement" class="UIElement">
+				<div id="UIElement" class="UIElement" style="height:400px;">
 					<span id='lib-load' style='font-size:x-large' hidden>Loading Library...</span><br />
 					<button id="showScanner" hidden>Show The Scanner</button>
 				</div>
@@ -115,7 +115,6 @@ frappe.ui.form.on("Pick List", {
 		`);
 
 		document.getElementById('showScanner').addEventListener('click', async() => {
-			debugger
 			if (pScanner)(await pScanner).show();
 		});
 	},
@@ -152,11 +151,10 @@ let pScanner = null;
 			 const format = result.barcodeFormat ? result.barcodeFormatString : result.barcodeFormatString_2;
 			 document.getElementById('result').value = format + ": " + txt;
 			 document.getElementById('result').focus();
-			 setTimeout(() => {
-				 document.getElementById('result').blur();
-			 }, 2000);
+			 scanner.hide();
 		 };
 		 document.getElementById('UIElement').appendChild(scanner.getUIElement());
+		 document.getElementsByClassName("dce-video-container")[0].style.height = "380px";
 		 await scanner.show();
 		 document.getElementById('lib-load').hidden = true;
 		 document.getElementById('results').style.visibility = "visible";

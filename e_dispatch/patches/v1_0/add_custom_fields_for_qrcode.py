@@ -24,5 +24,13 @@ def execute():
 			fieldtype="Link", options="Warehouse", insert_after="get_item_locations", no_copy=1))
 
 	create_custom_field("Pick List",
+		dict(fieldname="scan_qrcode_button", label="Scan Qr Code",
+			fieldtype="Button", insert_after="scan_qrcode", no_copy=1))
+
+	create_custom_field("Pick List",
+		dict(fieldname="qrcode_scanner", label="Qrcode Scanner",
+			fieldtype="HTML", insert_after="scan_qrcode_button", no_copy=1))
+
+	create_custom_field("Pick List",
 		dict(fieldname="custom_items", label="Items", read_only=1,
 			fieldtype="Table", options="Pick List QRCode", insert_after="locations"))

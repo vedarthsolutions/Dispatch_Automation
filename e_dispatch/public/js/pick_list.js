@@ -89,3 +89,14 @@ frappe.ui.form.on("Pick List", {
 		}
 	}
 })
+
+
+frappe.ui.form.on("Pick List", {
+	refresh(frm) {
+		frm.fields_dict.qrcode_scanner.$wrapper.append("<div id='app'>Test</div>")
+	},
+
+	scan_qrcode_button(frm, cdt, cdn) {
+		frappe.customscan_qrcode.make();
+	}
+});

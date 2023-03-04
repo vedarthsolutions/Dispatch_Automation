@@ -40,6 +40,10 @@ class CustomPickList(PickList):
 				picklist_row = row
 				break
 
+		if not picklist_row:
+			item_code = scan_qrcode.get('item_no')
+			frappe.throw(f"Item {item_code} is not in the pick list")
+
 		for row in self.custom_items:
 			if row.item_code == scan_qrcode.get("item_no") and row.batch == scan_qrcode.get("batch_no") and row.qr_code == scan_qrcode.get("box_no"):
 				custom_picklist_row = row

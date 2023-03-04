@@ -59,7 +59,7 @@ frappe.ui.form.on("BOM", {
 					});
 
 					let selector = frm.fields_dict.bom_browse_html.$wrapper.find('#bom-browser');
-					const datatable = new frappe.DataTable(selector[0], {
+					frm.datatable = new frappe.DataTable(selector[0], {
 						columns: [{
 							id: "item_code",
 							name: "Item Code",
@@ -109,7 +109,6 @@ frappe.ui.form.on("BOM", {
 							editable: false,
 							width: 200,
 							format: (value, row, column, data) => {
-								debugger
 								value = value;
 								value = add_select(value, data);
 								return value;
@@ -120,20 +119,24 @@ frappe.ui.form.on("BOM", {
 						treeView: true,
 					});
 
-					datatable.rowmanager.setTreeDepth(10);
+					frm.datatable.rowmanager.setTreeDepth(10);
 					if (frm.doc.docstatus != 0) {
-						$(datatable.wrapper).find(".production_state").attr("disabled", true);
+						$(frm.datatable.wrapper).find(".production_state").attr("disabled", true);
 					}
 
-					frm.events.update_production_state(frm, datatable);
-					frm.events.update_default_customer(frm, datatable);
+					frm.events.bind_events(frm);
 				}
 			}
 		})
 	},
 
-	update_production_state(frm, datatable) {
-		$(datatable.wrapper).find(".production_state")
+	bind_events(frm) {
+		frm.events.update_production_state(frm);
+		frm.events.update_default_customer(frm);
+	},
+
+	update_production_state(frm) {
+		$(frm.datatable.rowmanager.wrapper).find(".production_state")
 			.change((e) => {
 				let name = $(e.target).attr('id');
 				let value = $(e.target).val();
@@ -154,8 +157,8 @@ frappe.ui.form.on("BOM", {
 			});
 	},
 
-	update_default_customer(frm, datatable) {
-		$(datatable.wrapper).find(".default_customer")
+	update_default_customer(frm) {
+		$(frm.datatable.rowmanager.wrapper).find(".default_customer")
 			.change((e) => {
 				let name = $(e.target).attr('id');
 				let value = $(e.target).val();

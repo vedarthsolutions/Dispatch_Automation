@@ -17,6 +17,14 @@ frappe.ui.form.on("Pick List", {
 				},
 				callback: function(r) {
 					if (r.message) {
+						let l_row = frm.doc.locations.filter(d => {
+							return d.item_code == r.message.item_no && d.batch_no == r.message.batch_no
+						}) || [];
+
+						if (!l_row.length) {
+							frappe.throw(__("The batch {0} for item {1} has not picked", [r.message.batch_no, r.message.item_no]));
+						}
+
 						let row = frm.doc.custom_items.filter(d => {
 							return d.item_code == r.message.item_no && d.batch == r.message.batch_no && d.qr_code == r.message.box_no
 						}) || [];
@@ -55,7 +63,7 @@ frappe.ui.form.on("Pick List", {
 			let item_locations = {}
 			let item_batch = {}
 			frm.doc.custom_items.forEach(row => {
-				let key = [row.item_code, row.warehouse]
+				let key = [row.item_code, row.warehouse, row.batch]
 				if (key in item_locations) {
 					item_locations[key] += row.no_of_quantity
 				} else {
@@ -70,7 +78,7 @@ frappe.ui.form.on("Pick List", {
 			});
 
 			frm.doc.locations.forEach(l_row => {
-				let key = [l_row.item_code, l_row.warehouse]
+				let key = [l_row.item_code, l_row.warehouse, l_row.batch_no]
 				if (item_locations[key]) {
 					frappe.model.set_value(l_row.doctype, l_row.name, {
 						"picked_qty": item_locations[key],

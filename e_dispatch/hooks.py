@@ -116,6 +116,7 @@ doc_events = {
 
 	"Material Request": {
 		"on_submit": "e_dispatch.custom_folder.custom_material_request.on_submit_event",
+		"on_cancel": "e_dispatch.custom_folder.custom_material_request.on_cancel_event",
 	},
 
 	"Pick List": {

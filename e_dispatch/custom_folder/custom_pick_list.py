@@ -114,6 +114,7 @@ class CustomPickList(PickList):
 
 	@frappe.whitelist()
 	def set_item_locations(self, save=False):
+		return
 		if self.locations:
 			return
 

@@ -13,5 +13,5 @@ def set_batch_for_fg_item(doc):
 			return
 
 		for item in doc.items:
-			if not item.s_warehouse and item.t_warehouse:
+			if not item.s_warehouse and item.t_warehouse and item.is_finished_item:
 				item.batch_no = batch_no

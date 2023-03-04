@@ -13,7 +13,7 @@ frappe.ui.form.on("Production Plan", {
 	get_items_for_material_requests(frm, warehouses) {
 		let set_fields = ['actual_qty', 'item_code','item_name', 'description', 'uom', 'from_warehouse',
 			'min_order_qty', 'required_bom_qty', 'quantity', 'sales_order', 'warehouse', 'projected_qty', 'ordered_qty',
-			'reserved_qty_for_production', 'material_request_type', 'production_state'];
+			'reserved_qty_for_production', 'material_request_type', 'production_state', 'default_customer'];
 
 		frappe.call({
 			method: "erpnext.manufacturing.doctype.production_plan.production_plan.get_items_for_material_requests",

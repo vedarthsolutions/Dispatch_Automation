@@ -53,6 +53,8 @@ frappe.ui.form.on("BOM", {
 							"indent": d.indent,
 							"bom_no": d.bom_no,
 							"name": d.name,
+							"customers": d.customers,
+							"default_customer": d.default_customer,
 						}
 					});
 
@@ -85,7 +87,6 @@ frappe.ui.form.on("BOM", {
 							width: 200,
 							format: (value, row, column, data) => {
 								value = value;
-								debugger
 								if (data.bom_no) {
 									return `<select id="${data.name}" class="input-with-feedback form-control production_state" style="height:30px">
 										<option value="Ignore" ${value == "Ignore" ? "selected" : ""}>Ignore</option>
@@ -102,6 +103,17 @@ frappe.ui.form.on("BOM", {
 									</select>`;
 								}
 							}
+						}, {
+							id: "default_customer",
+							name: "Default Customer",
+							editable: false,
+							width: 200,
+							format: (value, row, column, data) => {
+								debugger
+								value = value;
+								value = add_select(value, data);
+								return value;
+							}
 						}],
 						data: bom_data,
 						name_field: "item_code",
@@ -114,6 +126,7 @@ frappe.ui.form.on("BOM", {
 					}
 
 					frm.events.update_production_state(frm, datatable);
+					frm.events.update_default_customer(frm, datatable);
 				}
 			}
 		})
@@ -128,6 +141,28 @@ frappe.ui.form.on("BOM", {
 				if (name && value) {
 					frappe.call({
 						method: "e_dispatch.custom_folder.custom_bom.update_production_state",
+						freeze: true,
+						args: {
+							name: name,
+							value: value
+						},
+						callback: (r) => {
+							frm.reload_doc();
+						}
+					})
+				}
+			});
+	},
+
+	update_default_customer(frm, datatable) {
+		$(datatable.wrapper).find(".default_customer")
+			.change((e) => {
+				let name = $(e.target).attr('id');
+				let value = $(e.target).val();
+
+				if (name && value) {
+					frappe.call({
+						method: "e_dispatch.custom_folder.custom_bom.update_default_customer",
 						freeze: true,
 						args: {
 							name: name,
@@ -158,3 +193,16 @@ frappe.ui.form.on("BOM", {
 //     fieldname: 'indent',
 //     fieldtype: 'Int',
 // }]
+
+function add_select(value, data) {
+	let options = '<option value=""></option>';
+	if (data.customers && data.customers.length > 0) {
+		data.customers.forEach((customer) => {
+			options += `<option value="${customer}" ${value == customer ? "selected" : ""}>${customer}</option>`;
+		});
+	}
+
+	return `<select id="${data.name}" class="input-with-feedback form-control default_customer" style="height:30px">
+		${options}
+	</select>`;
+}

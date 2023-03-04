@@ -129,12 +129,7 @@ class CustomProductionPlan(ProductionPlan):
 			if row.production_state != "Purchase and Resale":
 				continue
 
-			default_customer_for_rs = frappe.db.get_value("Item",
-				row.item_code, "default_customer_for_rs")
-
-			if not default_customer_for_rs:
-				frappe.throw(_("Please set the Default Customer for Resale in Item {0}").format(frappe.bold(row.item_code)))
-
+			default_customer_for_rs = row.default_customer
 			items.setdefault(default_customer_for_rs, []).append(row)
 
 		for default_customer, items in items.items():
@@ -270,8 +265,19 @@ def get_production_state(item_code, bom_details):
 		if row.item_code == item_code:
 			return row.production_state
 
+def get_default_customer(item_code, bom_details):
+	print(bom_details)
+	for row in bom_details:
+		if row.item_code == item_code:
+			return row.default_customer
+
 def validate_event(doc, method=None):
-	pass
+	validate_default_customer(doc)
+
+def validate_default_customer(doc):
+	for row in doc.mr_items:
+		if not row.default_customer and row.production_state == "Purchase and Resale":
+			frappe.throw(_("Default Customer is required for item {0}").format(row.item_code))
 
 @frappe.whitelist()
 def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_data=None):
@@ -439,12 +445,11 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 
 		frappe.msgprint(message, title=_("Note"))
 
-	print(bom_details)
 	if bom_details:
 		for item in mr_items:
 			item["production_state"] = get_production_state(item.get("item_code"),
 				bom_details)
+			item["default_customer"] = get_default_customer(item.get("item_code"),
+				bom_details)
 
-	print("\n\n\n-----")
-	print(mr_items)
 	return mr_items

@@ -7,6 +7,7 @@ def execute():
 	frappe.reload_doc("e_dispatch", "doctype", "custom_bom_item")
 	frappe.reload_doc("selling", "doctype", "sales_order_item")
 	frappe.reload_doc("selling", "doctype", "sales_order")
+	frappe.reload_doc("e_dispatch", "doctype", "custom_customer_item")
 
 	create_custom_field("BOM",
 		dict(fieldname="bom_browse_section", fieldtype="Section Break",
@@ -31,7 +32,7 @@ def execute():
 
 	create_custom_field("Item",
 		dict(fieldname="default_customer_for_rs", fieldtype="Link",
-			options="Customer",
+			options="Customer", hidden=1,
 			label="Default Customer for Resale", insert_after="production_state", no_copy=1)
 	)
 
@@ -45,6 +46,12 @@ def execute():
 		dict(fieldname="production_state", fieldtype="Select",
 			options="\nIgnore\nPurchase\nPurchase and Resale",
 			label="Production State", insert_after="item_name", no_copy=1, in_list_view=1)
+	)
+
+	create_custom_field("Material Request Plan Item",
+		dict(fieldname="default_customer", fieldtype="Link",
+			options="Customer",
+			label="Default Customer", insert_after="production_state", no_copy=1, in_list_view=1)
 	)
 
 	create_custom_field("Material Request Plan Item",
@@ -70,5 +77,18 @@ def execute():
 		dict(fieldname="production_plan_mr_item", fieldtype="Data",
 			label="Production Plan MR Item", insert_after="purchase_order_item",
 			no_copy=1, in_list_view=1, read_only=1
+		)
+	)
+
+	create_custom_field("Item",
+		dict(fieldname="customer_items_section", fieldtype="Section Break",
+			label="Customers Section", insert_after="image"
+		)
+	)
+
+	create_custom_field("Item",
+		dict(fieldname="item_customers", fieldtype="Table",
+			options="Custom Customer Item",
+			label="Customers", insert_after="customer_items_section"
 		)
 	)

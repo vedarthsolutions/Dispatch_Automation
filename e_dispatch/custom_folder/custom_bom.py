@@ -24,7 +24,13 @@ def get_bom_tree(bom_no, level=0, bom_items=[]):
 
 @frappe.whitelist()
 def get_custom_bom_items(bom_no):
-	return frappe.get_all("Custom BOM Item", {"parent": bom_no}, ["*"], order_by="idx asc")
+	data = frappe.get_all("Custom BOM Item", {"parent": bom_no}, ["*"], order_by="idx asc")
+	item_customers = itemwise_customers(data)
+	for d in data:
+		customers = item_customers.get(d.item_code, []) or []
+		d.customers = customers or []
+
+	return data
 
 def get_production_state(item):
 	fields = ["is_sub_contracted_item", "include_item_in_manufacturing",
@@ -48,12 +54,20 @@ def update_production_state(name, value):
 	frappe.msgprint("Production State updated", alert=True)
 
 @frappe.whitelist()
+def update_default_customer(name, value):
+	frappe.db.set_value("Custom BOM Item", name, "default_customer", value)
+	frappe.msgprint("Production State updated", alert=True)
+
+@frappe.whitelist()
 def update_bom_custom_items(bom_no):
 	bom_data = get_bom_tree(bom_no, 0, [])
 
 	doc = frappe.get_doc("BOM", bom_no)
 	doc.custom_bom_items = []
+	item_customers = itemwise_customers(bom_data)
+
 	for d in bom_data:
+		customers = item_customers.get(d.item_code, []) or []
 		doc.append("custom_bom_items", {
 			"item_code": d.item_code,
 			"qty": d.qty,
@@ -61,7 +75,21 @@ def update_bom_custom_items(bom_no):
 			"production_state": d.production_state or frappe.get_cached_value("Item",
 				d.item_code, "production_state") or "Ignore",
 			"indent": d.indent,
-			"bom_no": d.bom_no
+			"bom_no": d.bom_no,
+			"customers": customers
 		})
 
 	doc.save()
+
+def itemwise_customers(bom_data):
+	items = [d.item_code for d in bom_data]
+	data = frappe.get_all("Custom Customer Item",
+		filters={"parent": ("in", items)},
+		fields=["parent", "customer"]
+	)
+
+	itemwise_customers = {}
+	for d in data:
+		itemwise_customers.setdefault(d.parent, []).append(d.customer)
+
+	return itemwise_customers

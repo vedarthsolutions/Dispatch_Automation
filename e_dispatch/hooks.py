@@ -31,7 +31,10 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {
+	"Work Order" : "public/js/work_order.js",
+	"Pick List" : "public/js/pick_list.js"
+}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -104,13 +107,16 @@ app_license = "MIT"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	"Stock Entry": {
+		"before_save": "e_dispatch.custom_folder.custom_stock_entry.before_save_event",
+	},
+
+	"Pick List": {
+		"validate": "e_dispatch.custom_folder.custom_pick_list.validate_event",
+		"on_submit": "e_dispatch.custom_folder.custom_pick_list.on_submit_event",
+	}
+}
 
 # Scheduled Tasks
 # ---------------

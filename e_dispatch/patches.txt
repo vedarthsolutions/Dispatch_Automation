@@ -1,0 +1,1 @@
+e_dispatch.patches.v1_0.add_custom_fields_for_qrcode #1

@@ -22,6 +22,10 @@ frappe.ui.form.on("Pick List", {
 		fields.forEach(field => {
 			frm.set_df_property(field, "hidden", true);
 		});
+
+		frm.add_custom_button(__("Update Locations"), () => {
+			frm.trigger("set_picked_qty");
+		})
 	},
 
 	validate(frm) {

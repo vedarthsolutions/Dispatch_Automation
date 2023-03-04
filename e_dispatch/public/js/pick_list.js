@@ -7,6 +7,10 @@ frappe.ui.form.on("Pick List", {
 	},
 
 	hide_fields(frm) {
+		if (in_list(frappe.user_roles, "Sales Manager")) {
+			return;
+		}
+
 		if (in_list(["dispatch@fabchair.com", "Administrator"], frappe.session.user)) {
 			return;
 		}

@@ -2,7 +2,7 @@ import frappe
 import json
 from collections import defaultdict
 from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
-from frappe.utils import flt, nowdate
+from frappe.utils import flt, nowdate, get_link_to_form
 
 @frappe.whitelist()
 def scan_qrcode(locations, warehouse, company, scan_qrcode, name):
@@ -107,8 +107,12 @@ def create_sales_invoice(doc):
 		si.flags.ignore_permissions = True
 		si.update_stock = 1
 		si.company = doc.company
+		si.flags.ignore_mandatory = True
+		si.flags.ignore_validate = True
 		si.save()
-		si.submit()
+
+		name = get_link_to_form("Sales Invoice", si.name)
+		frappe.msgprint(f"Sales Invoice {name} created")
 
 def remove_non_picked_items(si, items):
 	remove_row = []

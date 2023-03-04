@@ -21,9 +21,12 @@ def scan_qrcode(locations, warehouse, company, scan_qrcode, name):
 	if scan_qrcode.get("item_no") not in item_locations:
 		frappe.throw(f"Item {scan_qrcode.get('item_no')} not in Item Locations")
 
-	picked_scanned_qr_code = frappe.get_all("Pick List QRCode", filters = {
-		"qr_code": scan_qrcode.get("box_no"), "parent": ["!=", name], "docstatus": ("!=", 2)
-	})
+	picked_scanned_qr_code = frappe.get_all("Pick List QRCode",
+		fields = ["parent"],
+		filters = {
+			"qr_code": scan_qrcode.get("box_no"), "parent": ["!=", name], "docstatus": ("!=", 2)
+		}
+	)
 
 	if picked_scanned_qr_code and picked_scanned_qr_code[0].parent:
 		frappe.throw(f"QR Code {scan_qrcode.get('box_no')} has already scanned in the pick list {picked_scanned_qr_code[0].parent}", title="Error Message 1")

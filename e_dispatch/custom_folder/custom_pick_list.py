@@ -152,8 +152,22 @@ def create_sales_invoice(doc):
 	for sales_order, items in sales_order_items.items():
 		si = make_sales_invoice(sales_order)
 
-		si = remove_non_picked_items(si, items)
-		si = update_qty_batch_in_invoice(si, items)
+		si.items = []
+		for row in items:
+			si.append("items", {
+				"item_code": row.item_code,
+				"item_name": row.item_name,
+				"description": row.description,
+				"qty": row.picked_qty,
+				"uom": row.stock_uom,
+				"stock_uom": row.stock_uom,
+				"conversion_factor": 1.0,
+				"rate": frappe.db.get_value("Sales Order Item", row.sales_order_item, "rate"),
+				"amount": row.picked_qty * frappe.db.get_value("Sales Order Item", row.sales_order_item, "rate"),
+				"warehouse": row.warehouse,
+				"batch_no": row.batch_no,
+			})
+
 		si.flags.ignore_permissions = True
 		si.update_stock = 1
 		si.company = doc.company

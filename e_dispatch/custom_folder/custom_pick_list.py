@@ -97,6 +97,9 @@ def get_available_batches(item_code, warehouse, company, batch):
 
 
 def validate_event(doc, method=None):
+	if doc.is_new():
+		doc.locations = []
+
 	validate_warehouse(doc)
 	validate_picked_qty(doc)
 

@@ -47,6 +47,12 @@ frappe.ui.form.on("Production Plan", {
 				item => (item.quantity > flt(item.sales_order_qty) && item.production_state == "Purchase and Resale")
 			);
 
+			frm.doc.sub_assembly_items.forEach(d => {
+				if (d.qty > flt(d.sales_order_qty) && in_list(["Subcontract and Resale", "In House and Resale"], d.production_state)) {
+					items.push(d);
+				}
+			})
+
 			if (items && items.length > 0) {
 				frm.trigger("make_sales_order");
 			}

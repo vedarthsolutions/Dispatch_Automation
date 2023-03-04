@@ -21,21 +21,41 @@ def update_production_plan_qty(doc):
 
 	mr_items = [row.production_plan_mr_item for row in doc.items if row.production_plan_mr_item]
 
+	if mr_items:
+		pp_items = frappe.get_all("Sales Order Item",
+			fields = ["production_plan_mr_item", "qty"],
+			filters = {
+				"production_plan_mr_item": ("in", mr_items),
+				"docstatus": 1
+			}
+		)
+
+		pp_item_map = defaultdict(float)
+		for d in pp_items:
+			pp_item_map[d.production_plan_mr_item] += d.qty
+
+		for production_plan_mr_item in mr_items:
+			frappe.db.set_value("Material Request Plan Item",
+				production_plan_mr_item, "sales_order_qty", flt(pp_item_map.get(production_plan_mr_item, 0.0)))
+
+
+	mr_items = [row.production_plan_sub_assembly_item for row in doc.items if row.production_plan_sub_assembly_item]
+
 	if not mr_items:
 		return
 
 	pp_items = frappe.get_all("Sales Order Item",
-		fields = ["production_plan_mr_item", "qty"],
+		fields = ["production_plan_sub_assembly_item", "qty"],
 		filters = {
-			"production_plan_mr_item": ("in", mr_items),
+			"production_plan_sub_assembly_item": ("in", mr_items),
 			"docstatus": 1
 		}
 	)
 
 	pp_item_map = defaultdict(float)
 	for d in pp_items:
-		pp_item_map[d.production_plan_mr_item] += d.qty
+		pp_item_map[d.production_plan_sub_assembly_item] += d.qty
 
-	for production_plan_mr_item in mr_items:
-		frappe.db.set_value("Material Request Plan Item",
-			production_plan_mr_item, "sales_order_qty", flt(pp_item_map.get(production_plan_mr_item, 0.0)))
+	for production_plan_sub_assembly_item in mr_items:
+		frappe.db.set_value("Production Plan Sub Assembly Item",
+			production_plan_sub_assembly_item, "sales_order_qty", flt(pp_item_map.get(production_plan_sub_assembly_item, 0.0)))

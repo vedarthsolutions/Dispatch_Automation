@@ -1,11 +1,14 @@
 
 import frappe, json
 from frappe import _, msgprint
-from frappe.utils import today, flt, comma_and, add_days, cint, nowdate
+from frappe.utils import today, flt, comma_and, add_days, cint, nowdate, ceil
 from e_dispatch.custom_folder.custom_bom import get_custom_bom_items
+from erpnext.setup.doctype.item_group.item_group import get_item_group_defaults
+from erpnext.stock.get_item_details import get_conversion_factor
+
 from erpnext.manufacturing.doctype.production_plan.production_plan import (
 	ProductionPlan, get_materials_from_other_locations,
-	get_material_request_items, get_bin_details, get_uom_conversion_factor,
+	get_bin_details, get_uom_conversion_factor,
 	get_exploded_items, get_subitems, get_warehouse_list)
 
 class CustomProductionPlan(ProductionPlan):
@@ -17,6 +20,8 @@ class CustomProductionPlan(ProductionPlan):
 			"Purchase": "Material Request",
 			"Purchase and Resale": "Material Request",
 			"In House": "In House",
+			"In House and Resale": "In House",
+			"Subcontract and Resale": "Subcontract",
 			"Subcontract": "Subcontract"
 		}
 
@@ -126,11 +131,26 @@ class CustomProductionPlan(ProductionPlan):
 	def make_sales_order(self):
 		items = {}
 		for row in self.mr_items:
-			if row.production_state != "Purchase and Resale":
+			if row.production_state not in ["Purchase and Resale",
+				"Subcontract and Resale", "In House and Resale"]:
 				continue
 
 			default_customer_for_rs = row.default_customer
-			items.setdefault(default_customer_for_rs, []).append(row)
+			if row.quantity > row.sales_order_qty:
+				items.setdefault(default_customer_for_rs, []).append(row)
+
+		for row in self.sub_assembly_items:
+			if row.production_state not in ["Subcontract and Resale", "In House and Resale"]:
+				continue
+
+			default_customer_for_rs = row.default_customer
+			if row.qty > row.sales_order_qty:
+				items.setdefault(default_customer_for_rs, []).append(frappe._dict({
+					"item_code": row.production_item,
+					"quantity": row.qty,
+					"warehouse": row.fg_warehouse,
+					"production_plan_sub_assembly_item": row.name
+				}))
 
 		for default_customer, items in items.items():
 			sales_order = frappe.new_doc("Sales Order")
@@ -142,12 +162,14 @@ class CustomProductionPlan(ProductionPlan):
 			sales_order.flags.ignore_permissions = 1
 
 			for row in items:
+				print(row.get("production_plan_sub_assembly_item"))
 				sales_order.append("items", {
 					"item_code": row.item_code,
 					"qty": row.quantity,
 					"delivery_date": add_days(nowdate(), 7),
 					"warehouse": row.warehouse,
-					"production_plan_mr_item": row.name,
+					"production_plan_mr_item": row.get("name"),
+					"production_plan_sub_assembly_item": row.get("production_plan_sub_assembly_item")
 				})
 
 			sales_order.run_method("set_missing_values")
@@ -156,6 +178,7 @@ class CustomProductionPlan(ProductionPlan):
 			sales_order.flags.ignore_validate = True
 			sales_order.flags.ignore_permissions = True
 			sales_order.save()
+			frappe.msgprint(_("Sales Order {0} created").format(sales_order.name))
 
 	def combine_subassembly_items(self, sub_assembly_items_store):
 		"Aggregate if same: Item, Warehouse, Inhouse/Outhouse Manu.g, BOM No."
@@ -266,7 +289,6 @@ def get_production_state(item_code, bom_details):
 			return row.production_state
 
 def get_default_customer(item_code, bom_details):
-	print(bom_details)
 	for row in bom_details:
 		if row.item_code == item_code:
 			return row.default_customer
@@ -276,8 +298,27 @@ def validate_event(doc, method=None):
 
 def validate_default_customer(doc):
 	for row in doc.mr_items:
-		if not row.default_customer and row.production_state == "Purchase and Resale":
+		if not row.default_customer and row.production_state in ["Purchase and Resale",
+			"Subcontract and Resale", "In House and Resale"]:
 			frappe.throw(_("Default Customer is required for item {0}").format(row.item_code))
+
+	for row in doc.sub_assembly_items:
+		if not row.default_customer and row.production_state in ["Subcontract and Resale", "In House and Resale"]:
+			frappe.throw(_("Default Customer is required for item {0}").format(row.production_item))
+
+def get_parent_bom_details(doc):
+	bom_details = {}
+	for row in doc.po_items:
+		if isinstance(row, dict):
+			row = frappe._dict(row)
+
+		if not row.bom_no:
+			continue
+
+		bom_details.setdefault(row.name, []).extend(get_custom_bom_items(row.bom_no))
+
+	return bom_details
+
 
 @frappe.whitelist()
 def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_data=None):
@@ -299,7 +340,8 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 	po_items = doc.get("po_items") if doc.get("po_items") else doc.get("items")
 	bom_details = []
 	if doc.get("po_items"):
-		bom_details = get_bom_details(doc)
+		bom_details = get_parent_bom_details(doc)
+
 
 	if doc.get("sub_assembly_items"):
 		for sa_row in doc.sub_assembly_items:
@@ -309,8 +351,9 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 					frappe._dict(
 						{
 							"item_code": sa_row.production_item,
+							"production_plan_item": sa_row.production_plan_item,
 							"required_qty": sa_row.qty,
-							"include_exploded_items": 0,
+							"include_exploded_items": 0
 						}
 					)
 				)
@@ -398,12 +441,22 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 
 		for item_code, details in item_details.items():
 			so_item_details.setdefault(sales_order, frappe._dict())
-			if item_code in so_item_details.get(sales_order, {}):
-				so_item_details[sales_order][item_code]["qty"] = so_item_details[sales_order][item_code].get(
+			production_plan_item = data.get("production_plan_item") or data.get("name")
+			bom_information = bom_details.get(production_plan_item)
+			details["production_state"] = get_production_state(item_code,
+				bom_information)
+
+			details["default_customer"] = get_default_customer(item_code,
+				bom_information)
+
+			key = (item_code, details["production_state"])
+
+			if key in so_item_details.get(sales_order, {}):
+				so_item_details[sales_order][key]["qty"] = so_item_details[sales_order][key].get(
 					"qty", 0
 				) + flt(details.qty)
 			else:
-				so_item_details[sales_order][item_code] = details
+				so_item_details[sales_order][key] = details
 
 	mr_items = []
 	for sales_order, item_code in so_item_details.items():
@@ -445,11 +498,77 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 
 		frappe.msgprint(message, title=_("Note"))
 
-	if bom_details:
-		for item in mr_items:
-			item["production_state"] = get_production_state(item.get("item_code"),
-				bom_details)
-			item["default_customer"] = get_default_customer(item.get("item_code"),
-				bom_details)
-
 	return mr_items
+
+
+def get_material_request_items(
+	row, sales_order, company, ignore_existing_ordered_qty, include_safety_stock, warehouse, bin_dict
+):
+	total_qty = row["qty"]
+
+	required_qty = 0
+	if ignore_existing_ordered_qty or bin_dict.get("projected_qty", 0) < 0:
+		required_qty = total_qty
+	elif total_qty > bin_dict.get("projected_qty", 0):
+		required_qty = total_qty - bin_dict.get("projected_qty", 0)
+	if required_qty > 0 and required_qty < row["min_order_qty"]:
+		required_qty = row["min_order_qty"]
+	item_group_defaults = get_item_group_defaults(row.item_code, company)
+
+	if not row["purchase_uom"]:
+		row["purchase_uom"] = row["stock_uom"]
+
+	if row["purchase_uom"] != row["stock_uom"]:
+		if not (row["conversion_factor"] or frappe.flags.show_qty_in_stock_uom):
+			frappe.throw(
+				_("UOM Conversion factor ({0} -> {1}) not found for item: {2}").format(
+					row["purchase_uom"], row["stock_uom"], row.item_code
+				)
+			)
+
+			required_qty = required_qty / row["conversion_factor"]
+
+	if frappe.db.get_value("UOM", row["purchase_uom"], "must_be_whole_number"):
+		required_qty = ceil(required_qty)
+
+	if include_safety_stock:
+		required_qty += flt(row["safety_stock"])
+
+	item_details = frappe.get_cached_value(
+		"Item", row.item_code, ["purchase_uom", "stock_uom"], as_dict=1
+	)
+
+	conversion_factor = 1.0
+	if (
+		row.get("default_material_request_type") == "Purchase"
+		and item_details.purchase_uom
+		and item_details.purchase_uom != item_details.stock_uom
+	):
+		conversion_factor = (
+			get_conversion_factor(row.item_code, item_details.purchase_uom).get("conversion_factor") or 1.0
+		)
+
+	if required_qty > 0:
+		return {
+			"item_code": row.item_code,
+			"production_state": row.production_state,
+			"default_customer": row.default_customer,
+			"item_name": row.item_name,
+			"quantity": required_qty / conversion_factor,
+			"required_bom_qty": total_qty,
+			"stock_uom": row.get("stock_uom"),
+			"warehouse": warehouse
+			or row.get("source_warehouse")
+			or row.get("default_warehouse")
+			or item_group_defaults.get("default_warehouse"),
+			"safety_stock": row.safety_stock,
+			"actual_qty": bin_dict.get("actual_qty", 0),
+			"projected_qty": bin_dict.get("projected_qty", 0),
+			"ordered_qty": bin_dict.get("ordered_qty", 0),
+			"reserved_qty_for_production": bin_dict.get("reserved_qty_for_production", 0),
+			"min_order_qty": row["min_order_qty"],
+			"material_request_type": row.get("default_material_request_type"),
+			"sales_order": sales_order,
+			"description": row.get("description"),
+			"uom": row.get("purchase_uom") or row.get("stock_uom"),
+		}

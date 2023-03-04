@@ -366,7 +366,7 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 		item_details = {}
 		parent_bom_details = bom_details.get(data.get("name"))
 		for row in parent_bom_details:
-			if row.production_state not in ["Purchase and Resale","Purchase"]:
+			if row.production_state not in ["Purchase and Resale","Purchase", "Ignore"]:
 				continue
 
 			key = (row.item_code, row.production_state)

@@ -33,7 +33,8 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {
 	"Work Order" : "public/js/work_order.js",
-	"Pick List" : "public/js/pick_list.js"
+	"Pick List" : "public/js/pick_list.js",
+	"Production Plan" : "public/js/production_plan.js"
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -100,7 +101,8 @@ doctype_js = {
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Pick List": "e_dispatch.custom_folder.custom_pick_list.CustomPickList"
+	"Pick List": "e_dispatch.custom_folder.custom_pick_list.CustomPickList",
+	"Production Plan": "e_dispatch.custom_folder.custom_production_plan.CustomProductionPlan",
 }
 
 # Document Events
@@ -110,6 +112,10 @@ override_doctype_class = {
 doc_events = {
 	"Stock Entry": {
 		"before_save": "e_dispatch.custom_folder.custom_stock_entry.before_save_event",
+	},
+
+	"Material Request": {
+		"on_submit": "e_dispatch.custom_folder.custom_material_request.on_submit_event",
 	},
 
 	"Pick List": {

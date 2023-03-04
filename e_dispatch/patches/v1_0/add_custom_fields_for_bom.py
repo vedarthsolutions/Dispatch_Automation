@@ -55,7 +55,7 @@ def execute():
 	create_custom_field("BOM",
 		dict(fieldname="custom_bom_items", fieldtype="Table",
 			options="Custom BOM Item",
-			label="Custom BOM Item", insert_after="uom", no_copy=1, in_list_view=1)
+			label="Custom BOM Item", insert_after="uom", no_copy=1)
 	)
 
 	create_custom_field("Sales Order",

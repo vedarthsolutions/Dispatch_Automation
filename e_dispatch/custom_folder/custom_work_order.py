@@ -7,7 +7,7 @@ from frappe.utils import cint
 def make_qr_code(work_order):
 	doc = frappe.get_doc("Work Order", work_order)
 
-	if frappe.db.get_value("item", doc.production_item, "has_batch_no"):
+	if frappe.db.get_value("Item", doc.production_item, "has_batch_no"):
 		batch = frappe.get_doc({
 			"doctype": "Batch",
 			"item": doc.production_item,

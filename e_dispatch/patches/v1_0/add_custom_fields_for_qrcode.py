@@ -16,7 +16,7 @@ def execute():
 			fieldtype="Int", insert_after="item_name", no_copy=1))
 
 	create_custom_field("Pick List",
-		dict(fieldname="scan_qrcode", label="Scan Qrcode",
+		dict(fieldname="scan_qrcode", label="Scan Qrcode", options="Barcode",
 			fieldtype="Data", insert_after="scan_barcode", no_copy=1, length=240))
 
 	create_custom_field("Pick List",

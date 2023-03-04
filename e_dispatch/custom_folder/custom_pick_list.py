@@ -71,10 +71,10 @@ def scan_qrcode(warehouse, company, scan_qrcode, name):
 	if picked_scanned_qr_code and picked_scanned_qr_code[0].parent:
 		frappe.throw(f"QR Code {scan_qrcode.get('box_no')} has already scanned in the pick list {picked_scanned_qr_code[0].parent}", title="Error Message 1")
 
-	data = get_available_batches(scan_qrcode.get("item_no"), warehouse, company, scan_qrcode.get("batch_no"))
-	scan_qrcode["batch_qty"] = data[0][8] if data else 0
-	if not flt(scan_qrcode["batch_qty"]):
-		frappe.throw(f"Batch {frappe.bold(scan_qrcode.get('batch_no'))} has no available qty in the warehouse {frappe.bold(warehouse)}")
+	# data = get_available_batches(scan_qrcode.get("item_no"), warehouse, company, scan_qrcode.get("batch_no"))
+	# scan_qrcode["batch_qty"] = data[0][8] if data else 0
+	# if not flt(scan_qrcode["batch_qty"]):
+	# 	frappe.throw(f"Batch {frappe.bold(scan_qrcode.get('batch_no'))} has no available qty in the warehouse {frappe.bold(warehouse)}")
 
 	scan_qrcode["warehouse"] = warehouse
 
@@ -84,7 +84,6 @@ def scan_qrcode(warehouse, company, scan_qrcode, name):
 def get_available_batches(item_code, warehouse, company, batch):
 	from erpnext.stock.report.batch_wise_balance_history.batch_wise_balance_history import execute
 
-	print(item_code, warehouse, company, batch)
 	filters = frappe._dict({
 		'item_code': item_code,
 		'warehouse': warehouse,

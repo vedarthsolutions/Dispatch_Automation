@@ -111,7 +111,7 @@ frappe.ui.form.on("Pick List", {
 								"item_code": r.message.item_no,
 								"warehouse": r.message.warehouse,
 								"qr_code": r.message.box_no,
-								"no_of_quantity": r.message.batch_qty ? r.message.qty : 0,
+								"no_of_quantity": flt(r.message.qty),
 								"batch": r.message.batch_no,
 								"qty": l_row[0].qty,
 								"stock_qty": l_row[0].stock_qty,
@@ -119,9 +119,10 @@ frappe.ui.form.on("Pick List", {
 								"sales_order_item": l_row[0].sales_order_item
 							});
 						} else {
+							// r.message.batch_qty ? r.message.qty : 0
 							frappe.model.set_value(row[0].doctype, row[0].name,
 								{
-									"no_of_quantity": r.message.batch_qty ? r.message.qty : 0,
+									"no_of_quantity": flt(r.message.qty),
 									"batch": r.message.batch_no,
 									"warehouse": r.message.warehouse
 								}

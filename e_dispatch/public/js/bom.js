@@ -55,6 +55,7 @@ frappe.ui.form.on("BOM", {
 							"name": d.name,
 							"customers": d.customers,
 							"default_customer": d.default_customer,
+							frm: frm
 						}
 					});
 
@@ -87,6 +88,11 @@ frappe.ui.form.on("BOM", {
 							width: 200,
 							format: (value, row, column, data) => {
 								value = value;
+
+								if (data.frm && data.frm.datatable) {
+									frm.events.bind_events(data.frm);
+								}
+
 								if (data.bom_no) {
 									return `<select id="${data.name}" class="input-with-feedback form-control production_state" style="height:30px">
 										<option value="Ignore" ${value == "Ignore" ? "selected" : ""}>Ignore</option>
@@ -110,6 +116,10 @@ frappe.ui.form.on("BOM", {
 							width: 200,
 							format: (value, row, column, data) => {
 								value = value;
+								if (data.frm && data.frm.datatable) {
+									frm.events.bind_events(data.frm);
+								}
+
 								value = add_select(value, data);
 								return value;
 							}

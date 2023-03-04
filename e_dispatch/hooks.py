@@ -33,6 +33,7 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {
 	"Work Order" : "public/js/work_order.js",
+	"BOM" : "public/js/bom.js",
 	"Pick List" : "public/js/pick_list.js",
 	"Production Plan" : "public/js/production_plan.js"
 }
@@ -122,6 +123,17 @@ doc_events = {
 	"Pick List": {
 		"validate": "e_dispatch.custom_folder.custom_pick_list.validate_event",
 		"on_submit": "e_dispatch.custom_folder.custom_pick_list.on_submit_event",
+	},
+
+	"Production Plan": {
+		"validate": "e_dispatch.custom_folder.custom_production_plan.validate_event"
+	},
+
+	"Sales Order": {
+		"on_update": "e_dispatch.custom_folder.custom_sales_order.on_update_event",
+		"on_submit": "e_dispatch.custom_folder.custom_sales_order.on_submit_event",
+		"on_cancel": "e_dispatch.custom_folder.custom_sales_order.on_cancel_event",
+		"on_trash": "e_dispatch.custom_folder.custom_sales_order.on_trash_event"
 	}
 }
 
@@ -154,9 +166,9 @@ doc_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "e_dispatch.event.get_events"
-# }
+override_whitelisted_methods = {
+	"erpnext.manufacturing.doctype.production_plan.production_plan.get_items_for_material_requests": "e_dispatch.custom_folder.custom_production_plan.get_items_for_material_requests"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

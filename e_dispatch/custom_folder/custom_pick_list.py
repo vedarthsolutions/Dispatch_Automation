@@ -289,12 +289,11 @@ def validate_scanned_item(doc):
 def create_sales_invoice(doc):
 	sales_order_items = {}
 
-	item_warehouse_batch = {}
-	for item in doc.custom_items:
-		item_warehouse_batch[(item.item_code, item.warehouse)] = item.batch
+	# item_warehouse_batch = {}
+	# for item in doc.custom_items:
+	# 	item_warehouse_batch[(item.item_code, item.warehouse)] = item.batch
 
 	for row in doc.locations:
-		row.batch_no = item_warehouse_batch.get((row.item_code, row.warehouse))
 		sales_order_items.setdefault(row.sales_order, []).append(row)
 
 	for sales_order, items in sales_order_items.items():

@@ -349,7 +349,11 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 	include_safety_stock = doc.get("include_safety_stock")
 
 	so_item_details = frappe._dict()
-	for data in po_items:
+
+	for data in doc.get("po_items"):
+		if not data.get("name"):
+			continue
+
 		if not data.get("include_exploded_items") and doc.get("sub_assembly_items"):
 			data["include_exploded_items"] = 1
 
@@ -360,78 +364,45 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 		warehouse = doc.get("for_warehouse")
 
 		item_details = {}
-		if data.get("bom") or data.get("bom_no"):
-			if data.get("required_qty"):
-				bom_no = data.get("bom")
-				include_non_stock_items = 1
-				include_subcontracted_items = 1 if data.get("include_exploded_items") else 0
-			else:
-				bom_no = data.get("bom_no")
-				include_subcontracted_items = doc.get("include_subcontracted_items")
-				include_non_stock_items = doc.get("include_non_stock_items")
+		parent_bom_details = bom_details.get(data.get("name"))
+		for row in parent_bom_details:
+			if row.production_state not in ["Purchase and Resale","Purchase"]:
+				continue
 
-			if not planned_qty:
-				frappe.throw(_("For row {0}: Enter Planned Qty").format(data.get("idx")))
+			key = (row.item_code, row.production_state)
 
-			if bom_no:
-				if data.get("include_exploded_items") and include_subcontracted_items:
-					# fetch exploded items from BOM
-					item_details = get_exploded_items(
-						item_details, company, bom_no, include_non_stock_items, planned_qty=planned_qty
-					)
-				else:
-					item_details = get_subitems(
-						doc,
-						data,
-						item_details,
-						bom_no,
-						company,
-						include_non_stock_items,
-						include_subcontracted_items,
-						1,
-						planned_qty=planned_qty,
-					)
-		elif data.get("item_code"):
-			item_master = frappe.get_doc("Item", data["item_code"]).as_dict()
-			purchase_uom = item_master.purchase_uom or item_master.stock_uom
-			conversion_factor = (
-				get_uom_conversion_factor(item_master.name, purchase_uom) if item_master.purchase_uom else 1.0
-			)
+			if key not in item_details:
+				item_master = frappe.get_doc("Item", row.item_code)
+				purchase_uom = item_master.purchase_uom or item_master.stock_uom
+				conversion_factor = (
+					get_uom_conversion_factor(item_master.name, purchase_uom) if item_master.purchase_uom else 1.0
+				)
 
-			item_details[item_master.name] = frappe._dict(
-				{
-					"item_name": item_master.item_name,
-					"default_bom": doc.bom,
-					"purchase_uom": purchase_uom,
-					"default_warehouse": item_master.default_warehouse,
+				item_details.setdefault(key, frappe._dict({
+					"item_code": row.item_code,
+					"qty": row.qty * planned_qty,
+					"production_state": row.production_state,
 					"min_order_qty": item_master.min_order_qty,
-					"default_material_request_type": item_master.default_material_request_type,
-					"qty": planned_qty or 1,
-					"is_sub_contracted": item_master.is_subcontracted_item,
-					"item_code": item_master.name,
 					"description": item_master.description,
 					"stock_uom": item_master.stock_uom,
-					"conversion_factor": conversion_factor,
 					"safety_stock": item_master.safety_stock,
-				}
-			)
+					"conversion_factor": conversion_factor,
+					"purchase_uom": purchase_uom,
+					"default_customer": row.default_customer,
+					"warehouse": warehouse,
+					"include_safety_stock": include_safety_stock,
+					"ignore_existing_ordered_qty": ignore_existing_ordered_qty,
+					"company": company,
+					"sales_order": doc.get("sales_order"),
+					"production_plan_item": data.get("production_plan_item") or data.get("name")
+				}))
+			else:
+				item_details[key].qty += (row.qty * planned_qty)
 
 		sales_order = doc.get("sales_order")
 
-		for item_code, details in item_details.items():
+		for key, details in item_details.items():
 			so_item_details.setdefault(sales_order, frappe._dict())
-			production_plan_item = data.get("production_plan_item") or data.get("name")
-			bom_information = bom_details.get(production_plan_item)
-			details["production_state"] = get_production_state(item_code,
-				bom_information)
-
-			details["default_customer"] = get_default_customer(item_code,
-				bom_information)
-
-			key = (item_code, details["production_state"])
-			if details["default_customer"]:
-				key = (item_code, details["production_state"], details["default_customer"])
-
 			if key in so_item_details.get(sales_order, {}):
 				so_item_details[sales_order][key]["qty"] = so_item_details[sales_order][key].get(
 					"qty", 0

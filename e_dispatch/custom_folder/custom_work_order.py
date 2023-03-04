@@ -35,7 +35,21 @@ def make_qr_code(work_order):
 
 			content = json.dumps(args)
 
-			img = qrcode.make(content)
+
+			qr = qrcode.QRCode(
+				version=1,
+				error_correction=qrcode.constants.ERROR_CORRECT_L,
+				box_size=3,
+				border=4,
+			)
+			qr.add_data(content)
+			qr.make(fit=True)
+
+			img = qr.make_image(fill_color="black", back_color="white")
+
+
+
+			# img = qrcode.make(content)
 			file_name = frappe.generate_hash("", 12)
 			path = frappe.get_site_path("public", "files", file_name + ".png")
 			img.save(path)

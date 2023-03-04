@@ -1,6 +1,5 @@
 frappe.ui.form.on("Pick List", {
 	refresh(frm) {
-		frm.set_df_property("picklist_items", "read_only", 1);
 		frm.clear_custom_buttons()
 		frm.trigger('add_get_items_button');
 		frm.events.hide_fields(frm);
@@ -14,6 +13,8 @@ frappe.ui.form.on("Pick List", {
 		if (in_list(["dispatch@fabchair.com", "Administrator"], frappe.session.user)) {
 			return;
 		}
+
+		frm.set_df_property("picklist_items", "read_only", 1);
 
 		let fields = ["section_break_6", "section_break_15",
 			"print_settings_section", "custom_section_break", "pick_list_details"]

@@ -7,6 +7,10 @@ frappe.ui.form.on("Pick List", {
 
 	hide_fields(frm) {
 		if (in_list(frappe.user_roles, "Sales Manager")) {
+			frm.add_custom_button(__("Update Locations"), () => {
+				frm.trigger("set_picked_qty");
+			});
+
 			return;
 		}
 
@@ -22,10 +26,6 @@ frappe.ui.form.on("Pick List", {
 		fields.forEach(field => {
 			frm.set_df_property(field, "hidden", true);
 		});
-
-		frm.add_custom_button(__("Update Locations"), () => {
-			frm.trigger("set_picked_qty");
-		})
 	},
 
 	validate(frm) {

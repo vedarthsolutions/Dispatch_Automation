@@ -4,6 +4,54 @@ from collections import defaultdict
 from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
 from frappe.utils import flt, nowdate, get_link_to_form
 
+from erpnext.stock.doctype.pick_list.pick_list import (PickList,
+	get_available_item_locations, get_items_with_location_and_quantity)
+
+class CustomPickList(PickList):
+	@frappe.whitelist()
+	def set_item_locations(self, save=False):
+		if self.locations:
+			return
+
+		self.validate_for_qty()
+		items = self.aggregate_item_qty()
+		self.item_location_map = frappe._dict()
+
+		from_warehouses = None
+		if self.parent_warehouse:
+			from_warehouses = frappe.db.get_descendants("Warehouse", self.parent_warehouse)
+
+		# Create replica before resetting, to handle empty table on update after submit.
+		locations_replica = self.get("locations")
+
+		# reset
+		self.delete_key("locations")
+		for item_doc in items:
+			item_code = item_doc.item_code
+
+			self.item_location_map.setdefault(
+				item_code,
+				get_available_item_locations(
+					item_code, from_warehouses, self.item_count_map.get(item_code), self.company
+				),
+			)
+
+			locations = get_items_with_location_and_quantity(
+				item_doc, self.item_location_map, self.docstatus
+			)
+
+			item_doc.idx = None
+			item_doc.name = None
+
+			for row in locations:
+				location = item_doc.as_dict()
+				location.update(row)
+				self.append("locations", location)
+
+		if save:
+			self.save()
+
+
 @frappe.whitelist()
 def scan_qrcode(locations, warehouse, company, scan_qrcode, name):
 	if isinstance(locations, str):
@@ -68,7 +116,7 @@ def validate_event(doc, method=None):
 
 def validate_warehouse(doc):
 	for row in doc.locations:
-		if row.warehouse != doc.warehouse:
+		if doc.warehouse and row.warehouse and row.warehouse != doc.warehouse:
 			frappe.throw(f"Row {row.idx}: Warehouse should be same as Pick From Warehouse {doc.warehouse}")
 
 def validate_picked_qty(doc):
@@ -86,7 +134,21 @@ def validate_picked_qty(doc):
 
 
 def on_submit_event(doc, method=None):
+	validate_scanned_item(doc)
 	create_sales_invoice(doc)
+
+def validate_scanned_item(doc):
+	if doc.purpose != "Delivery":
+		return
+
+	if not doc.custom_items:
+		frappe.throw("Please scan the QR Code")
+
+	items = [d.item_code for d in doc.custom_items]
+
+	for row in doc.locations:
+		if row.item_code not in items:
+			frappe.throw(f"Item {row.item_no} not scanned")
 
 def create_sales_invoice(doc):
 	sales_order_items = {}

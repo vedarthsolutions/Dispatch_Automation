@@ -99,9 +99,9 @@ doctype_js = {
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Pick List": "e_dispatch.custom_folder.custom_pick_list.CustomPickList"
+}
 
 # Document Events
 # ---------------

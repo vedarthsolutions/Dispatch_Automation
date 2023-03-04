@@ -16,21 +16,21 @@ def execute():
 			fieldtype="Int", insert_after="item_name", no_copy=1))
 
 	create_custom_field("Pick List",
-		dict(fieldname="scan_qrcode", label="Scan Qrcode", options="Barcode",
-			fieldtype="Data", insert_after="scan_barcode", no_copy=1, length=240))
-
-	create_custom_field("Pick List",
 		dict(fieldname="warehouse", label="Pick from Warehouse",
 			fieldtype="Link", options="Warehouse", insert_after="get_item_locations", no_copy=1))
 
 	create_custom_field("Pick List",
-		dict(fieldname="scan_qrcode_button", label="Scan Qr Code",
-			fieldtype="Button", insert_after="scan_qrcode", no_copy=1))
-
-	create_custom_field("Pick List",
 		dict(fieldname="qrcode_scanner", label="Qrcode Scanner",
-			fieldtype="HTML", insert_after="scan_qrcode_button", no_copy=1))
+			fieldtype="HTML", insert_after="warehouse", no_copy=1))
 
 	create_custom_field("Pick List",
-		dict(fieldname="custom_items", label="Items", read_only=1,
+		dict(fieldname="custom_section_break", label="Items",
+			fieldtype="Section Break", insert_after="scan_qrcode_button"))
+
+	create_custom_field("Pick List",
+		dict(fieldname="picklist_items", label="Items",
+			fieldtype="Table", options="Custom Pick List Item", insert_after="custom_section_break", no_copy=1))
+
+	create_custom_field("Pick List",
+		dict(fieldname="custom_items", label="Items",
 			fieldtype="Table", options="Pick List QRCode", insert_after="locations"))

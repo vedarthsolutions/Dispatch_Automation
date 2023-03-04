@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../../../apps/e_dispatch/e_dispatch/public/js/e_dispatch.bundle.js"],
-  "sourcesContent": ["debugger\n\n// import \"./scan_qrcode\";"],
-  "mappings": ";;AAAA;",
-  "names": []
-}

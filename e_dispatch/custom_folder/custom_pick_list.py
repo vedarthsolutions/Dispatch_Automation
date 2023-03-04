@@ -1,5 +1,6 @@
 import frappe
 import json
+from frappe.model.mapper import get_mapped_doc
 from collections import defaultdict
 from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
 from frappe.utils import flt, nowdate, get_link_to_form
@@ -53,21 +54,9 @@ class CustomPickList(PickList):
 
 
 @frappe.whitelist()
-def scan_qrcode(locations, warehouse, company, scan_qrcode, name):
-	if isinstance(locations, str):
-		locations = json.loads(locations)
-
+def scan_qrcode(warehouse, company, scan_qrcode, name):
 	if isinstance(scan_qrcode, str):
 		scan_qrcode = json.loads(scan_qrcode)
-
-	if not locations:
-		frappe.throw("Please add Item Locations")
-
-
-	item_locations = [location.get("item_code") for location in locations ]
-
-	if scan_qrcode.get("item_no") not in item_locations:
-		frappe.throw(f"Item {scan_qrcode.get('item_no')} not in Item Locations")
 
 	picked_scanned_qr_code = frappe.get_all("Pick List QRCode",
 		fields = ["parent"],
@@ -83,9 +72,6 @@ def scan_qrcode(locations, warehouse, company, scan_qrcode, name):
 	scan_qrcode["batch_qty"] = data[0][8] if data else 0
 	if not flt(scan_qrcode["batch_qty"]):
 		frappe.throw(f"Batch {frappe.bold(scan_qrcode.get('batch_no'))} has no available qty in the warehouse {frappe.bold(warehouse)}")
-
-	if not frappe.db.exists("File", {"file_name": scan_qrcode.get("box_no")}):
-		frappe.throw(f"QR Code {scan_qrcode.get('box_no')} not found")
 
 	scan_qrcode["warehouse"] = warehouse
 
@@ -195,3 +181,38 @@ def update_qty_batch_in_invoice(si, items):
 				row.batch_no = item.batch_no
 
 	return si
+
+
+@frappe.whitelist()
+def create_pick_list(source_name, target_doc=None):
+	def update_item_quantity(source, target, source_parent):
+		target.qty = flt(source.qty) - flt(source.delivered_qty)
+		target.stock_qty = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.conversion_factor)
+
+	doc = get_mapped_doc(
+		"Sales Order",
+		source_name,
+		{
+			"Sales Order": {
+				"doctype": "Pick List",
+				"validation": {
+					"docstatus": ["=", 1]
+				},
+				"field_no_map": ["naming_series"],
+			},
+			"Sales Order Item": {
+				"doctype": "Custom Pick List Item",
+				"field_map": {"parent": "sales_order", "name": "sales_order_item"},
+				"postprocess": update_item_quantity,
+				"condition": lambda doc: abs(doc.delivered_qty) < abs(doc.qty)
+				and doc.delivered_by_supplier != 1,
+			},
+		},
+		target_doc,
+	)
+
+	doc.purpose = "Delivery"
+
+	doc.set_item_locations()
+
+	return doc

@@ -49,7 +49,7 @@ def update_production_state(name, value):
 
 @frappe.whitelist()
 def update_bom_custom_items(bom_no):
-	bom_data = get_bom_tree(bom_no)
+	bom_data = get_bom_tree(bom_no, 0, [])
 
 	doc = frappe.get_doc("BOM", bom_no)
 	doc.custom_bom_items = []

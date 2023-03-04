@@ -8,6 +8,10 @@ frappe.ui.form.on("BOM", {
 		if (!frm.is_new()) {
 			frm.trigger("prepare_bom_browser");
 		}
+
+		if (frm.doc.docstatus === 1) {
+			frm.toggle_display("prepare_bom_tree", false);
+		}
 	},
 
 	prepare_bom_browser(frm) {

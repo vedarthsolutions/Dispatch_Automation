@@ -450,6 +450,8 @@ def get_items_for_material_requests(doc, warehouses=None, get_parent_warehouse_d
 				bom_information)
 
 			key = (item_code, details["production_state"])
+			if details["default_customer"]:
+				key = (item_code, details["production_state"], details["default_customer"])
 
 			if key in so_item_details.get(sales_order, {}):
 				so_item_details[sales_order][key]["qty"] = so_item_details[sales_order][key].get(

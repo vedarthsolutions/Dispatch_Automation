@@ -22,7 +22,7 @@ def get_bom_tree(bom_no, level=0, parent_qty = 0, bom_items=[]):
 		new_item["qty"] = item.qty / bom.quantity * parent_qty
 		bom_items.append(new_item)
 		if item.bom_no:
-			bom_items += get_bom_tree(item.bom_no, level+1, bom.quantity, [])
+			bom_items += get_bom_tree(item.bom_no, level+1, new_item["qty"], [])
 
 	return bom_items
 

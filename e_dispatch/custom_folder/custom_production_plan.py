@@ -214,9 +214,12 @@ class CustomProductionPlan(ProductionPlan):
 		bom_details = get_parent_bom_details(self)
 		self.set("boughtout_items", [])
 
-		default_warehouses = {}
+		parent_bom_details = {}
 		for row in self.po_items:
-			default_warehouses[row.name] = row.warehouse
+			parent_bom_details[row.name] = {
+				"warehouse": row.warehouse,
+				"planned_qty": row.planned_qty
+			}
 
 		for key, bom_data in bom_details.items():
 			for row in bom_data:
@@ -225,15 +228,17 @@ class CustomProductionPlan(ProductionPlan):
 				]:
 					continue
 
+				bom_info = parent_bom_details.get(key) or {}
+
 				item_doc = frappe.get_cached_doc("Item", row.item_code)
 				self.append("boughtout_items", {
 					"item_code": row.item_code,
 					"item_name": row.item_name,
 					"uom": row.uom,
-					"qty": row.qty,
+					"qty": row.qty * flt(bom_info.get("planned_qty")),
 					"default_customer": row.default_customer,
 					"production_state": row.production_state,
-					"warehouse": get_item_warehouse(item_doc, self, overwrite_warehouse=False) or default_warehouses.get(key)
+					"warehouse": get_item_warehouse(item_doc, self, overwrite_warehouse=False) or bom_info.get("warehouse")
 				})
 
 		self.save()

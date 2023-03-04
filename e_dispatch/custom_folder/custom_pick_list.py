@@ -1,5 +1,6 @@
 import frappe
 import json
+from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from collections import defaultdict
 from erpnext.selling.doctype.sales_order.sales_order import make_sales_invoice
@@ -11,6 +12,86 @@ from erpnext.stock.doctype.pick_list.pick_list import (PickList,
 class CustomPickList(PickList):
 	def before_save(self):
 		pass
+
+	@frappe.whitelist()
+	def custom_scan_qrcode(self, scanned_qrcode):
+		if isinstance(scanned_qrcode, str):
+			scan_qrcode = json.loads(scanned_qrcode)
+		else:
+			scan_qrcode = scanned_qrcode
+
+		picked_scanned_qr_code = frappe.get_all("Pick List QRCode",
+			fields = ["parent"],
+			filters = {
+				"qr_code": scan_qrcode.get("box_no"), "parent": ["!=", self.name], "docstatus": ("!=", 2)
+			}
+		)
+
+		if picked_scanned_qr_code and picked_scanned_qr_code[0].parent:
+			frappe.throw(f"QR Code {scan_qrcode.get('box_no')} has already scanned in the pick list {picked_scanned_qr_code[0].parent}", title="Error Message 1")
+
+		return self.add_custom_items(scan_qrcode)
+
+	def add_custom_items(self, scan_qrcode):
+		picklist_row = ''
+		custom_picklist_row = ''
+		for row in self.picklist_items:
+			if row.item_code == scan_qrcode.get("item_no"):
+				picklist_row = row
+				break
+
+		for row in self.custom_items:
+			if row.item_code == scan_qrcode.get("item_no") and row.batch == scan_qrcode.get("batch_no") and row.qr_code == scan_qrcode.get("box_no"):
+				custom_picklist_row = row
+				break
+
+		if not custom_picklist_row:
+			self.append("custom_items", {
+				"item_code": scan_qrcode.get("item_no"),
+				"batch": scan_qrcode.get("batch_no"),
+				"qr_code": scan_qrcode.get("box_no"),
+				"no_of_quantity": scan_qrcode.get("qty"),
+				"warehouse": self.warehouse,
+				"qty": picklist_row.qty,
+				"stock_qty": picklist_row.stock_qty,
+				"sales_order": picklist_row.sales_order,
+				"sales_order_item": picklist_row.sales_order_item
+			})
+		else:
+			custom_picklist_row.no_of_quantity = scan_qrcode.get("qty")
+			custom_picklist_row.batch = scan_qrcode.get("batch_no")
+			custom_picklist_row.warehouse = self.warehouse
+
+			box_no = scan_qrcode.get("box_no")
+			frappe.msgprint(_(f"The QR Code {box_no} is already scanned"));
+
+		item_locations = {}
+		for n_row in self.custom_items:
+			key = (n_row.item_code, n_row.warehouse, n_row.batch, n_row.sales_order, n_row.sales_order_item)
+			if key not in item_locations:
+				item_locations[key] = [n_row.no_of_quantity, n_row.qty, n_row.stock_qty]
+			else:
+				item_locations[key][0] += n_row.no_of_quantity
+
+		self.locations = []
+		for key, values in item_locations.items():
+			self.append("locations", {
+				"item_code": key[0],
+				"warehouse": key[1],
+				"batch_no": key[2],
+				"qty": values[1],
+				"stock_qty": values[2],
+				"sales_order": key[3],
+				"sales_order_item": key[4],
+				"picked_qty": values[0]
+			})
+
+		self.save(ignore_permissions=True)
+
+		return {
+			"locations": self.locations,
+			"custom_items": self.custom_items
+		}
 
 	@frappe.whitelist()
 	def set_item_locations(self, save=False):
@@ -58,18 +139,7 @@ class CustomPickList(PickList):
 
 @frappe.whitelist()
 def scan_qrcode(warehouse, company, scan_qrcode, name):
-	if isinstance(scan_qrcode, str):
-		scan_qrcode = json.loads(scan_qrcode)
 
-	picked_scanned_qr_code = frappe.get_all("Pick List QRCode",
-		fields = ["parent"],
-		filters = {
-			"qr_code": scan_qrcode.get("box_no"), "parent": ["!=", name], "docstatus": ("!=", 2)
-		}
-	)
-
-	if picked_scanned_qr_code and picked_scanned_qr_code[0].parent:
-		frappe.throw(f"QR Code {scan_qrcode.get('box_no')} has already scanned in the pick list {picked_scanned_qr_code[0].parent}", title="Error Message 1")
 
 	# data = get_available_batches(scan_qrcode.get("item_no"), warehouse, company, scan_qrcode.get("batch_no"))
 	# scan_qrcode["batch_qty"] = data[0][8] if data else 0
@@ -78,7 +148,64 @@ def scan_qrcode(warehouse, company, scan_qrcode, name):
 
 	scan_qrcode["warehouse"] = warehouse
 
-	return scan_qrcode
+	pl_doc = frappe.get_doc("Pick List", name)
+
+	picklist_row = ''
+	custom_picklist_row = ''
+	for row in pl_doc.picklist_items:
+		if row.item_code == scan_qrcode.get("item_no"):
+			picklist_row = row
+			break
+
+	for row in pl_doc.custom_items:
+		if row.item_code == scan_qrcode.get("item_no") and row.batch == scan_qrcode.get("batch_no") and row.qr_code == scan_qrcode.get("box_no"):
+			custom_picklist_row = row
+			break
+
+	if not custom_picklist_row:
+		pl_doc.append("custom_items", {
+			"item_code": scan_qrcode.get("item_no"),
+			"batch": scan_qrcode.get("batch_no"),
+			"qr_code": scan_qrcode.get("box_no"),
+			"no_of_quantity": scan_qrcode.get("qty"),
+			"warehouse": warehouse,
+			"qty": picklist_row.qty,
+			"stock_qty": picklist_row.stock_qty,
+			"sales_order": picklist_row.sales_order,
+			"sales_order_item": picklist_row.sales_order_item
+		})
+	else:
+		custom_picklist_row.no_of_quantity = scan_qrcode.get("qty")
+		custom_picklist_row.batch = scan_qrcode.get("batch_no")
+		custom_picklist_row.warehouse = scan_qrcode.get("warehouse")
+
+		box_no = scan_qrcode.get("box_no")
+		frappe.msgprint(_(f"The QR Code {box_no} is already scanned"));
+
+	item_locations = {}
+	for n_row in pl_doc.custom_items:
+		key = (n_row.item_code, n_row.warehouse, n_row.batch, n_row.sales_order, n_row.sales_order_item)
+		if key not in item_locations:
+			item_locations[key] = [n_row.no_of_quantity, n_row.qty, n_row.stock_qty]
+		else:
+			item_locations[key][0] += n_row.no_of_quantity
+
+	pl_doc.locations = []
+	for key, values in item_locations.items():
+		pl_doc.append("locations", {
+			"item_code": key[0],
+			"warehouse": key[1],
+			"batch_no": key[2],
+			"qty": values[1],
+			"stock_qty": values[2],
+			"sales_order": key[3],
+			"sales_order_item": key[4],
+			"picked_qty": values[0]
+		})
+
+	pl_doc.save(ignore_permissions=True)
+
+	return pl_doc.custom_items
 
 
 def get_available_batches(item_code, warehouse, company, batch):
@@ -174,6 +301,7 @@ def create_sales_invoice(doc):
 		si.flags.ignore_permissions = True
 		si.update_stock = 1
 		si.company = doc.company
+		si.pick_list = doc.name
 		si.flags.ignore_mandatory = True
 		si.flags.ignore_validate = True
 		si.save()

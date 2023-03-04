@@ -83,58 +83,17 @@ frappe.ui.form.on("Pick List", {
 		}
 
 		if (scanned_qrcode) {
-			frappe.call({
-				method: "e_dispatch.custom_folder.custom_pick_list.scan_qrcode",
+			frm.call({
+				method: "custom_scan_qrcode",
 				freeze: true,
+				doc: frm.doc,
 				args: {
-					"warehouse": frm.doc.warehouse,
-					"company": frm.doc.company,
-					"scan_qrcode": scanned_qrcode,
-					"name": frm.doc.name
+					"scanned_qrcode": scanned_qrcode,
 				},
 				callback: function(r) {
-					if (r.message) {
-						let l_row = frm.doc.picklist_items.filter(d => {
-							return d.item_code == r.message.item_no
-						}) || [];
-
-						if (!l_row.length) {
-							frappe.throw(__("The wrong item {0} has picked", [r.message.item_no]));
-						}
-
-						let row = frm.doc.custom_items.filter(d => {
-							return d.item_code == r.message.item_no && d.batch == r.message.batch_no && d.qr_code == r.message.box_no
-						}) || [];
-
-						if (!row.length) {
-							frm.add_child("custom_items", {
-								"item_code": r.message.item_no,
-								"warehouse": r.message.warehouse,
-								"qr_code": r.message.box_no,
-								"no_of_quantity": flt(r.message.qty),
-								"batch": r.message.batch_no,
-								"qty": l_row[0].qty,
-								"stock_qty": l_row[0].stock_qty,
-								"sales_order": l_row[0].sales_order,
-								"sales_order_item": l_row[0].sales_order_item
-							});
-						} else {
-							// r.message.batch_qty ? r.message.qty : 0
-							frappe.model.set_value(row[0].doctype, row[0].name,
-								{
-									"no_of_quantity": flt(r.message.qty),
-									"batch": r.message.batch_no,
-									"warehouse": r.message.warehouse
-								}
-							);
-
-							frappe.throw(__("The QR Code {0} is already scanned", [r.message.box_no]));
-						}
-
-						refresh_field("custom_items");
-						frm.events.set_picked_qty(frm);
-						frm.save();
-					}
+					refresh_field("locations");
+					refresh_field("custom_items");
+					frm.events.set_no_of_boxes(frm);
 				}
 			})
 		}
@@ -178,7 +137,6 @@ frappe.ui.form.on("Pick List", {
 
 			<div id="UIElement" class="UIElement" style="height:400px;">
 				<span id='lib-load' style='font-size:x-large' hidden>Loading Library...</span><br />
-				<button style="display:none" id="showScanner" hidden>Show The Scanner</button>
 			</div>
 			<div style="display:none">
 				<span style="float:left;margin-top:20px;">All Results:</span><br />
@@ -192,7 +150,8 @@ frappe.ui.form.on("Pick List", {
 				}, 2000)
 
 			</script>
-			<button id="scan_qrcode" class="btn btn-primary">Scan Qr Code</button>
+			<button id="scan_qrcode" class="btn btn-primary">Start Scanner</button>
+			<button class="btn btn-primary" style="display:none" id="showScanner" >Show Scanner</button>
 			<p style="padding-top:15px"><label>Total Box Scanned : </label> <b id="scanned_box"></b></p>
 		`);
 
@@ -201,17 +160,26 @@ frappe.ui.form.on("Pick List", {
 				frappe.throw(__("Please select Pick From Warehouse"));
 			}
 
+			document.getElementById('showScanner').style.display = '';
+			document.getElementById('scan_qrcode').style.display = 'none';
+
 			startBarcodeScanner((scanned_qrcode) => {
 				frm.events.parse_qrcode(frm, scanned_qrcode);
 			});
 		});
 
+		document.getElementById('showScanner').addEventListener('click', async() => {
+			if (pScanner)(await pScanner).show();
+		});
+
 		frm.events.set_no_of_boxes(frm);
 	},
 
-	set_no_of_boxes(frm) {
+	set_no_of_boxes(frm, count) {
 		let total_boxes = 0;
-		if (frm.doc.custom_items && frm.doc.custom_items.length > 0) {
+		if (count && count > 0) {
+			total_boxes = count;
+		} else if (frm.doc.custom_items && frm.doc.custom_items.length > 0) {
 			total_boxes = frm.doc.custom_items.length;
 		}
 
@@ -248,7 +216,7 @@ let pScanner = null;
 		 };
 		 scanner.onUniqueRead = (txt, result) => {
 			 const format = result.barcodeFormat ? result.barcodeFormatString : result.barcodeFormatString_2;
-			//  scanner.hide();
+			 scanner.hide();
 			 callback(txt);
 		 };
 		 document.getElementById('UIElement').appendChild(scanner.getUIElement());

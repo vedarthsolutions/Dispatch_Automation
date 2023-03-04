@@ -537,6 +537,8 @@ frappe.ui.form.on("BOM", {
 										<option value="In House" ${value == "In House" ? "selected" : ""}>In House</option>
 										<option value="Subcontract" ${value == "Subcontract" ? "selected" : ""}>Subcontract</option>
 										<option value="Purchase" ${value == "Purchase" ? "selected" : ""}>Purchase</option>
+                                        <option value="In House and Resale" ${value == "In House and Resale" ? "selected" : ""}>In House and Resale</option>
+                                        <option value="Subcontract and Resale" ${value == "Subcontract and Resale" ? "selected" : ""}>Subcontract and Resale</option>
 										<option value="Purchase and Resale" ${value == "Purchase and Resale" ? "selected" : ""}>Purchase and Resale</option>
 									</select>`;
 								} else {

@@ -248,8 +248,7 @@ let pScanner = null;
 		 };
 		 scanner.onUniqueRead = (txt, result) => {
 			 const format = result.barcodeFormat ? result.barcodeFormatString : result.barcodeFormatString_2;
-			 scanner.hide();
-			 debugger
+			//  scanner.hide();
 			 callback(txt);
 		 };
 		 document.getElementById('UIElement').appendChild(scanner.getUIElement());

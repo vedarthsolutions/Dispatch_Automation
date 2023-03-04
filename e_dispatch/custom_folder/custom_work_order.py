@@ -40,7 +40,7 @@ def make_qr_code(work_order):
 			path = frappe.get_site_path("public", "files", file_name + ".png")
 			img.save(path)
 
-			doc = frappe.get_doc(
+			file_doc = frappe.get_doc(
 				doctype="File",
 				file_url=f"/files/{file_name}.png",
 				attached_to_name=doc.name,
@@ -49,7 +49,7 @@ def make_qr_code(work_order):
 				folder="Home/Attachments",
 			).insert(ignore_permissions=True)
 
-			frappe.db.set_value("File", doc.name, "file_name", qr_code_id)
+			frappe.db.set_value("File", file_doc.name, "file_name", qr_code_id)
 			qr_code_created = True
 
 		if qr_code_created:

@@ -442,7 +442,6 @@ class RowManager {
 
 frappe.ui.form.on("BOM", {
 	refresh(frm) {
-		frm.toggle_display("custom_bom_items", false);
 		frm.fields_dict.bom_browse_html.$wrapper.html('');
 		if (!frm.is_new()) {
 			frm.trigger("prepare_bom_browser");

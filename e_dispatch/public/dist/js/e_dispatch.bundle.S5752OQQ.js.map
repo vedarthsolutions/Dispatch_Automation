@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../apps/e_dispatch/e_dispatch/public/js/test.js"],
+  "sourcesContent": ["frappe.provide(\"frappe\");\n\nfrappe.TestClass = class TScanner {\n\tt() {\n\t\tconsole.log(\"hiii\")\n\t}\n};\n"],
+  "mappings": "MAAA,OAAO,QAAQ,QAAQ,EAEvB,OAAO,UAAY,KAAe,CACjC,GAAI,CACH,QAAQ,IAAI,MAAM,CACnB,CACD",
+  "names": []
+}

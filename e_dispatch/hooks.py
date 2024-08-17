@@ -14,7 +14,7 @@ app_license = "MIT"
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/e_dispatch/css/e_dispatch.css"
-# app_include_js = "edispatch.bundle.js"
+#app_include_js = "e_dispatch.bundle.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/e_dispatch/css/e_dispatch.css"
@@ -35,9 +35,12 @@ doctype_js = {
 	"Work Order" : "public/js/work_order.js",
 	"BOM" : "public/js/bom.js",
 	"Pick List" : "public/js/pick_list.js",
-	"Production Plan" : "public/js/production_plan.js"
+	"Production Plan" : "public/js/production_plan.js",
+	"Sales Invoice": "custom_folder/custom_sales_invoice.js",
+	"Batch": "custom_folder/custom_batch.js",
+	"Purchase Receipt": "custom_folder/custom_purchase_receipt.js",
 }
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -113,6 +116,12 @@ override_doctype_class = {
 doc_events = {
 	"Stock Entry": {
 		"before_save": "e_dispatch.custom_folder.custom_stock_entry.before_save_event",
+		"on_submit": "e_dispatch.custom_folder.custom_stock_entry.on_submit_event",
+                "on_cancel": "e_dispatch.custom_folder.custom_stock_entry.on_cancel_event",
+	},
+
+	"Serial and Batch Bundle": {
+		"on_submit": "e_dispatch.custom_folder.custom_stock_entry.on_submit_event_sabb"
 	},
 
 	"Material Request": {
@@ -123,6 +132,7 @@ doc_events = {
 	"Pick List": {
 		"validate": "e_dispatch.custom_folder.custom_pick_list.validate_event",
 		"on_submit": "e_dispatch.custom_folder.custom_pick_list.on_submit_event",
+		"on_cancel": "e_dispatch.custom_folder.custom_pick_list.on_cancel_event"
 	},
 
 	"Production Plan": {
@@ -135,6 +145,17 @@ doc_events = {
 		"on_submit": "e_dispatch.custom_folder.custom_sales_order.on_submit_event",
 		"on_cancel": "e_dispatch.custom_folder.custom_sales_order.on_cancel_event",
 		"on_trash": "e_dispatch.custom_folder.custom_sales_order.on_trash_event"
+	},
+
+	"Sales Invoice": {
+		"validate": "e_dispatch.custom_folder.custom_sales_invoice.on_validate_event",
+		"on_submit": "e_dispatch.custom_folder.custom_sales_invoice.on_submit_event",
+                "on_cancel": "e_dispatch.custom_folder.custom_sales_invoice.on_cancel_event",
+	},
+
+	"Purchase Receipt": {
+		"on_submit": "e_dispatch.custom_folder.custom_purchase_receipt.on_submit_event",
+		"on_cancel": "e_dispatch.custom_folder.custom_purchase_receipt.on_cancel_event",
 	}
 }
 

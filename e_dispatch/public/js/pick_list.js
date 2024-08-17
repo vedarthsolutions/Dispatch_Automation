@@ -3,6 +3,17 @@ frappe.ui.form.on("Pick List", {
 		frm.clear_custom_buttons()
 		frm.trigger('add_get_items_button');
 		frm.events.hide_fields(frm);
+		frm.trigger('_set_queries');
+	},
+
+	_set_queries(frm) {
+		frm.set_query("transporter", () => {
+			return {
+				filters: {
+					is_transporter: 1
+				}
+			}
+		})
 	},
 
 	hide_fields(frm) {
@@ -93,7 +104,8 @@ frappe.ui.form.on("Pick List", {
 				callback: function(r) {
 					refresh_field("locations");
 					refresh_field("custom_items");
-					frm.events.set_no_of_boxes(frm);
+					let count = r.message.custom_items.length
+					frm.events.set_no_of_boxes(frm, count);
 				}
 			})
 		}
@@ -216,7 +228,6 @@ let pScanner = null;
 		 };
 		 scanner.onUniqueRead = (txt, result) => {
 			 const format = result.barcodeFormat ? result.barcodeFormatString : result.barcodeFormatString_2;
-			 scanner.hide();
 			 callback(txt);
 		 };
 		 document.getElementById('UIElement').appendChild(scanner.getUIElement());

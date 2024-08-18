@@ -23,6 +23,6 @@ def update_warehouse_in_scanned_box(doc, is_canceled=False):
 			qr_codes = list(qr_codes.keys())
 
 		qr_table = frappe.qb.DocType("Work Order Qrcode")
-			(
-				frappe.qb.update(qr_table).set(qr_table.warehouse, warehouse).set(qr_table.has_picked, has_picked).where(qr_table.qr_code_id.isin(qr_codes))
-			).run()
+		(
+			frappe.qb.update(qr_table).set(qr_table.warehouse, warehouse).set(qr_table.has_picked, has_picked).where(qr_table.qr_code_id.isin(qr_codes))
+		).run()

@@ -110,7 +110,7 @@ class CustomPickList(PickList):
 			scan_qrcode = scanned_qrcode
 
 		picked_scanned_qr_code = frappe.get_all("Work Order Qrcode",
-			fields = ["has_picked", "pick_list", "warehouse", "is_discarded"],
+			fields = ["has_picked", "warehouse", "is_discarded"],
 			filters = {
 				"qr_code_id": scan_qrcode.get("box_no")
 			}

@@ -254,3 +254,5 @@ let pScanner = null;
 		 newSPAN.className = className;
 	 return newSPAN;
  }
+
+ //new code

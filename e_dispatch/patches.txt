@@ -2,7 +2,7 @@
 [post_model_sync]
 e_dispatch.patches.v1_0.add_custom_fields_for_qrcode #33
 e_dispatch.patches.v1_0.add_custom_fields_for_production_plan #12
-e_dispatch.patches.v1_0.add_custom_fields_for_bom #32
+e_dispatch.patches.v1_0.add_custom_fields_for_bom #37
 e_dispatch.patches.v1_0.add_custom_fields_for_new_production_plan #14
 e_dispatch.patches.v1_0.add_custom_fields_for_work_order_base_64 #14
 e_dispatch.patches.v1_0.add_invoice_related_fields_in_pick_list #5

@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-09-21 14:14:59.881713",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "dynamsoft_key"
+ ],
+ "fields": [
+  {
+   "fieldname": "dynamsoft_key",
+   "fieldtype": "Small Text",
+   "label": "Dynamsoft Key"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-09-21 14:15:24.294772",
+ "modified_by": "Administrator",
+ "module": "E Dispatch",
+ "name": "E Dispatch Automation Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

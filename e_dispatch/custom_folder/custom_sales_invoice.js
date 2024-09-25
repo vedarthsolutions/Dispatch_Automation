@@ -21,13 +21,26 @@ frappe.ui.form.on("Sales Invoice", {
 					<div id="results"></div>
 			</div>
 
-			<script src="https://cdn.jsdelivr.net/npm/dynamsoft-javascript-barcode@9.3.1/dist/dbr.js"></script>
 			<script>
-					setTimeout(function() {
-							Dynamsoft.DBR.BarcodeReader.license = 'DLS2eyJoYW5kc2hha2VDb2RlIjoiMTAxNTA3MDI4LTEwMTU4NjM1MiIsIm1haW5TZXJ2ZXJVUkwiOiJodHRwczovL21sdHMuZHluYW1zb2Z0LmNvbS8iLCJvcmdhbml6YXRpb25JRCI6IjEwMTUwNzAyOCIsInN0YW5kYnlTZXJ2ZXJVUkwiOiJodHRwczovL3NsdHMuZHluYW1zb2Z0LmNvbS8iLCJjaGVja0NvZGUiOjE5MjcyMTM4ODN9'
-					}, 2000)
+                frappe.call({
+                    method: "e_dispatch.e_dispatch.doctype.e_dispatch_automation_settings.e_dispatch_automation_settings.get_dynamsoft_license_key",
+                    callback: function(response) {
+                        var licenseKey = response.message;
+                        if (licenseKey) {
+                            setTimeout(function() {
+                                Dynamsoft.DBR.BarcodeReader.license = licenseKey;
+                            }, 2000);
+                        } else {
+                            console.error("License key not found.");
+                        }
+                    },
+                    error: function(error) {
+                        console.error("Failed to fetch license key:", error);
+                    }
+                });
 
-			</script>
+
+            </script>
 			<button id="scan_qrcode" class="btn btn-primary">Start Scanner</button>
 			<button class="btn btn-primary" style="display:none" id="showScanner" >Show Scanner</button>
 			<p style="padding-top:15px"><label>Total Box Scanned : </label> <b id="scanned_box"></b></p>
